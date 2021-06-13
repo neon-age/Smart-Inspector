@@ -1,0 +1,33 @@
+﻿
+#TabsBar {
+    padding-top: 2;
+    
+    background-color: #282828;
+    width: 28;
+    flex-grow: 1;
+    flex-direction: column;
+    align-items: flex-end;
+}
+.inspector-tab {
+    margin-bottom: 8;
+}
+
+.inspector-tab-button {
+    background-color: #353535;
+    
+    margin-bottom: 3;
+    margin-right: 0;
+    padding: 4;
+
+    width: 24;
+    height: 24;
+    
+    border-width: 0;
+
+    border-top-right-radius: 1;
+    border-bottom-right-radius: 1;
+}
+
+.inspector-tab-button:hover {
+    background-color: #444444;
+}

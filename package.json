@@ -1,0 +1,19 @@
+{
+  "name": "com.av.smart-inspector",
+  "version": "0.1.0",
+  "displayName": "Smart Inspector",
+  "description": "Keeps your screen real-estate clean with refined, compact UX.",
+  "keywords": [
+    "editor",
+    "inspector",
+    "tools",
+    "utility",
+    "extensions"
+  ],
+  "author": {
+    "name": "Alternative Visual",
+    "email": "alternativevisualgames@gmail.com",
+    "url": "alternativevisual.dev"
+  },
+  "unity": "2019.3"
+}

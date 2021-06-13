@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e395afd4caf04c3c9f19fb4935b42149, type: 3}
+  m_Name: UI Resources
+  m_EditorClassIdentifier: 
+  commonStyles: {fileID: 7433441132597879392, guid: ef1237b070c462e4eb26fca0332104a3, type: 3}
+  scrollViewStyle: {fileID: 7433441132597879392, guid: 46cdd7b95ede0f14390e6a26d6913911, type: 3}
+  componentsHeaderStyle: {fileID: 7433441132597879392, guid: d200692a7d7191c4f8832b720dbe739e, type: 3}
+  componentsToolbarStyle: {fileID: 7433441132597879392, guid: 84161fa001b1f7d43b2bd51691ba6906, type: 3}
+  inspectorMainToolbarStyle: {fileID: 7433441132597879392, guid: c83b2a9444ad1e04a949183d86446bac, type: 3}
+  pinIcon: {fileID: 2800000, guid: 2967dc1790e95b248883e372d9830b63, type: 3}
+  debugIcon: {fileID: 2800000, guid: f578f7a56b85e1448902f88e6f7c6b15, type: 3}

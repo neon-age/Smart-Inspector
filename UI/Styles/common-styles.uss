@@ -1,0 +1,8 @@
+
+
+
+.small-icon {
+    width: 16;
+    height: 16;
+    flex-shrink: 0;
+}

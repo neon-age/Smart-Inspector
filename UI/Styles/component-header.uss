@@ -1,0 +1,95 @@
+
+
+.transform {
+    margin-top: 7;
+}
+
+.header-foldout {
+    flex-direction: row;
+    flex-grow: 1;
+}
+.header-foldout #unity-content {
+   margin-left: 0;
+}
+.header-foldout .unity-foldout__toggle {
+    flex-direction: row;
+    flex-grow: 1;
+    margin-top: 3;
+    margin: 0;
+    margin-left: 2;
+    height: 20;
+}
+.header-foldout .unity-foldout__toggle > .unity-toggle__input {
+    flex-grow: 0;
+}
+.header-foldout .unity-foldout__toggle #unity-checkmark {
+    width: 14;
+    height: 14;
+}
+.header-foldout .unity-foldout__toggle:focus > .header-title {
+    color: rgb(129, 180, 255);
+}
+
+.component-header .enabled-toggle {
+    margin: 1 4 0 2;
+}
+.component-header .small-icon {
+    top: 1;
+}
+.component-header .header-title {
+    flex-grow: 1;
+    padding-top: 1;
+    -unity-font-style: bold;
+}
+
+.component-header .header-item {
+    margin-right: 4;
+}
+.component-header .header-items-group {
+    display: none;
+    flex-direction: row;
+    align-items: center;
+    margin-right: 2;
+    height: 13;
+    top: 1;
+}
+.component-header:hover > .header-items-group {
+    display: flex;
+}
+
+.component-header {
+    padding-top: 2;
+    height: 22;
+    padding-right: 4;
+    flex-direction: row;
+    
+    border-bottom-width: 1;
+    border-bottom-color: rgba(0, 0, 0, 0.3);
+    
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.component-header:hover {
+    background-color: rgba(128, 128, 128, 0.3);
+}
+
+.toolbar-button:checked {
+    background-color: rgb(62, 95, 150);
+}
+.toolbar-button {
+    justify-content: center;
+    align-items: center;
+    align-self: center;
+    
+    padding-top: 0;
+    margin-bottom: 1;
+    
+    width: 28;
+    height: 21;
+    
+    border-left-width: 0;
+    border-right-width: 0;
+}
+
+.small-icon {
+}

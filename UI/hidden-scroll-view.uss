@@ -1,0 +1,29 @@
+﻿
+.unity-inspector-element {
+    padding-right: 4;
+}
+
+.unity-inspector-root-scrollview > #unity-content-viewport {
+    margin-right: 0;
+}
+
+.unity-scroller--vertical {
+    width: 6;
+    right: 7;
+}
+.unity-scroller #unity-dragger {
+    width: 10;
+}
+.unity-scroller:disabled {
+    opacity: 0;
+}
+.unity-scroller:enabled {
+    opacity: 0;
+}
+.unity-scroller:hover {
+    opacity: 1;
+}
+
+#RowContainer {
+    flex-grow: 1;
+}
