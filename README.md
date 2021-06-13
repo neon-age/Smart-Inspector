@@ -21,6 +21,9 @@ https://user-images.githubusercontent.com/29812914/121816066-a8e13880-cca3-11eb-
 [Twitter](https://twitter.com/_neonage) 
 • [Discord Channel](https://discord.gg/u6g6zUm9G4)
 
+[![image](https://user-images.githubusercontent.com/29812914/121816656-0cb93080-cca7-11eb-954a-344cfd31f530.png)](https://discord.gg/u6g6zUm9G4)
+
+
 ## Consider Donation! 💊
 [paypal.me/neonage](https://paypal.me/neonage) • [Patreon](https://www.patreon.com/neonage?fan_landing=true)
 
