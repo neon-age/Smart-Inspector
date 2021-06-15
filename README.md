@@ -13,6 +13,11 @@ Collapsing and Reordering by default.
 
 https://user-images.githubusercontent.com/29812914/121816066-a8e13880-cca3-11eb-966d-781f2fd0bc10.mp4
 
+### **Improved Dragging**
+Larger drop area, so you don't have to precisely aim at 2 pixels between headers.
+
+https://user-images.githubusercontent.com/29812914/122023147-76ddec80-cdf1-11eb-8cd8-0a370e7bfc8c.mp4
+
 
 
 ---------------------
