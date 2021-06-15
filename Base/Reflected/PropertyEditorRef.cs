@@ -8,7 +8,7 @@ namespace AV.Inspector
 {
     internal static class PropertyEditorRef
     {
-        internal static Type type { get; } = Type.GetType("UnityEditor.PropertyEditor, UnityEditor");
+        internal static Type type { get; } = typeof(Editor).Assembly.GetType("UnityEditor.PropertyEditor");
         
         static readonly PropertyInfo tracker = type.GetProperty("tracker");
         
@@ -22,7 +22,7 @@ namespace AV.Inspector
             GetInspectedObject = Lambda<Func<EditorWindow, Object>>(Call(Convert(windowParam, type), getInspectedObjectRef), windowParam).Compile();
         }
 
-        public static ActiveEditorTracker GetTracker(EditorWindow propertyEditor)
+        public static ActiveEditorTracker GetTracker(object propertyEditor)
         {
             return (ActiveEditorTracker)tracker.GetValue(propertyEditor);
         }

@@ -8,25 +8,27 @@ namespace AV.Inspector
 {
     internal class InspectorComponentsToolbar : InspectorElement
     {
-        private static UIResources UIResource => UIResources.Asset;
+        static UIResources UIResource => UIResources.Asset;
+
+        readonly VisualElement tabsList = new VisualElement().AddClass("tabs-list");
 
         public InspectorComponentsToolbar()
         {
-            var editors = Inspector.editors;
-            
+            Add(tabsList);
             AddToClassList("components-toolbar");
             
             styleSheets.Add(UIResource.commonStyles);
             styleSheets.Add(UIResource.componentsToolbarStyle);
 
-            //var localHierarchyButton = CreateToggle(false, hierarchyIcon);
-            //Add(localHierarchyButton);
-            
-            //var goButton = CreateToggle(false, EditorUtils.GetObjectIcon(inspectedObject));
-            //Add(goButton);
+            Rebuild();
+            SwitchEditorTabs();
+        }
 
-            //var components = gameObject.GetComponents<Component>();
-            foreach (var editor in editors)
+        public void Rebuild()
+        {
+            tabsList.Clear();
+
+            foreach (var editor in Inspector.editors)
             {
                 var target = editor.editor.target;
                 
@@ -35,12 +37,10 @@ namespace AV.Inspector
 
                 var button = new InspectorEditorTab(editor);
                 
-                Add(button);
+                tabsList.Add(button);
                 
                 button.RegisterCallback<ChangeEvent<bool>>(_ => SwitchEditorTabs());
             }
-
-            SwitchEditorTabs();
         }
 
         void SwitchEditorTabs()

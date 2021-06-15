@@ -8,6 +8,7 @@ using UnityEngine.UIElements;
 namespace AV.Inspector
 {
     // Not sure if it's worth it.. We might instead skip expensive header methods using Harmony
+    /*
     internal class ComponentHeaderElement : VisualElement
     {
         private static UIResources UIResource => UIResources.Asset;
@@ -107,5 +108,5 @@ namespace AV.Inspector
         {
             InternalEditorUtility.SetIsInspectorExpanded(target, value);
         }
-    }
+    }*/
 }

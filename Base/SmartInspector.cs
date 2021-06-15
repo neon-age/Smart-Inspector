@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.UIElements;
+using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -22,6 +23,7 @@ namespace AV.Inspector
         internal static SmartInspector LastInjected;
         
         internal EditorWindow propertyEditor;
+        internal ActiveEditorTracker tracker;
         internal VisualElement root;
         internal VisualElement mainContainer;
         internal VisualElement editorsList;
@@ -32,6 +34,7 @@ namespace AV.Inspector
         SmartInspector(EditorWindow propertyEditor)
         {
             this.propertyEditor = propertyEditor;
+            this.tracker = PropertyEditorRef.GetTracker(propertyEditor);
 
             this.root = propertyEditor.rootVisualElement;
             this.mainContainer = root.Query(className: "unity-inspector-main-container").First();
@@ -59,41 +62,8 @@ namespace AV.Inspector
             
             contentViewport.RegisterCallback<GeometryChangedEvent>(_ => contentViewport.style.marginRight = 0);
             
-            var allEditors = editorsList.Children().ToList();
-            this.editors = new List<EditorElement>();
-            
-            foreach (var editorElement in allEditors)
-            {
-                if (editorElement.GetType() != EditorElementRef.type)
-                    continue;
-                
-                var editor = EditorElementRef.GetEditor(editorElement);
-                var editorIndex = EditorElementRef.GetEditorIndex(editorElement);
-                
-                var target = editor.target;
-                var isGo = target is GameObject;
+            RetrieveEditorElements();
 
-                if (isGo)
-                    gameObjectEditor = editorElement;
-
-                if (target is Transform)
-                    editorElement.AddToClassList("transform");
-
-                if (target is Component)
-                {
-                    //ManipulateEditorElement(editorElement, editor);
-                }
-                
-                if (!isGo)
-                    editors.Add(new EditorElement
-                    {
-                        element = editorElement, 
-                        inspector = editorElement.Get(".unity-inspector-element"),
-                        editor = editor,
-                        index = editorIndex
-                    });
-            }
-            
             var hasMainToolbar = mainContainer.Query<InspectorMainToolbar>().HasAny();
             if (!hasMainToolbar)
             {
@@ -113,7 +83,7 @@ namespace AV.Inspector
             if (gameObjectEditor.childCount != 3)
                 return false; // Uninitialized
             
-            var inspectorObject = PropertyEditorRef.GetInspectedObject(propertyEditor);
+            //var inspectorObject = PropertyEditorRef.GetInspectedObject(propertyEditor);
             //Debug.Log(inspectorObject);
             
             var componentsToolbar = new InspectorComponentsToolbar();
@@ -126,7 +96,88 @@ namespace AV.Inspector
             
             return true;
         }
+
+        /// <see cref="PropertyEditorPatch.RebuildContentsContainers_"/>
+        public void OnRebuildContent(EditorWindow window, InspectorInjection.RebuildStage stage)
+        {
+            if (window != propertyEditor)
+                return;
+
+            if (stage == InspectorInjection.RebuildStage.EndBeforeRepaint)
+            {
+                RebuildToolbar();
+                FixComponentLayout();
+            }
+
+            if (stage == InspectorInjection.RebuildStage.PostfixAfterRepaint)
+            {
+                FixComponentLayout();
+            }
+        }
+
+        void FixComponentLayout()
+        {
+            // Fixes an issue when collapsed components kept expanded layout (no idea why!)
+            editorsList.Query(className: "component").ForEach(x =>
+            {
+                x.style.fontSize = 12 + (Random.value / 1000);
+            });
+        }
         
+        public void RebuildToolbar()
+        {
+            RetrieveEditorElements();
+            var toolbar = root.Query<InspectorComponentsToolbar>().First();
+            toolbar.Rebuild();
+        }
+
+        void RetrieveEditorElements()
+        {
+            this.editors = new List<EditorElement>();
+            
+            var allEditors = editorsList.Children().ToList();
+            
+            foreach (var editorElement in allEditors)
+            {
+                if (editorElement.GetType() != EditorElementRef.type)
+                    continue;
+
+                var inspector = editorElement.Get(".unity-inspector-element");
+                if (inspector == null)
+                    continue;
+                
+                var editor = EditorElementRef.GetEditor(editorElement);
+                var editorIndex = EditorElementRef.GetEditorIndex(editorElement);
+                
+                var target = editor.target;
+                var isGo = target is GameObject;
+                
+                inspector.RegisterCallback<GeometryChangedEvent>(evt =>
+                {
+                    var isExpanded = InternalEditorUtility.GetIsInspectorExpanded(target);
+                    editorElement.EnableInClassList("is-expanded", isExpanded);
+                });
+
+                if (isGo)
+                    gameObjectEditor = editorElement;
+                    
+                editorElement.EnableInClassList("game-object", isGo);
+                editorElement.EnableInClassList("transform", target is Transform);
+                editorElement.EnableInClassList("component", target is Component);
+                editorElement.EnableInClassList("material", target is Material);
+
+                if (!isGo)
+                    editors.Add(new EditorElement
+                    {
+                        element = editorElement, 
+                        inspector = inspector,
+                        editor = editor,
+                        index = editorIndex
+                    });
+            }
+        }
+        
+        /*
         private static void ManipulateEditorElement(VisualElement editorElement, Editor editor)
         {
             var header = editorElement?.Query<IMGUIContainer>().Where(x => x != null && x.name.EndsWith("Header")).First();
@@ -154,6 +205,6 @@ namespace AV.Inspector
             }
 
             //header.RemoveFromHierarchy();
-        }
+        }*/
     }
 }

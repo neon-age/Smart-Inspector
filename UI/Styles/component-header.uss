@@ -1,7 +1,18 @@
 
-
+.component InspectorElement {
+}
 .transform {
     margin-top: 7;
+}
+.material {
+    margin-top: 1;
+    margin-bottom: -6;
+}
+.material.is-expanded {
+    margin-bottom: 0;
+}
+.game-object InspectorElement {
+    margin-bottom: 0;
 }
 
 .header-foldout {

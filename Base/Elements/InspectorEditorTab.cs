@@ -37,7 +37,8 @@ namespace AV.Inspector
         {
             this.editor = editor;
             this.tracker = PropertyEditorRef.GetTracker(inspector.propertyEditor);
-            
+
+            name = GetTitle();
             //tooltip = GetTitle();
             RestoreTabState();
 

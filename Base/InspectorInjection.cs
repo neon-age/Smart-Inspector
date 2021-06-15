@@ -1,4 +1,5 @@
 ﻿
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -11,11 +12,19 @@ namespace AV.Inspector
     [InitializeOnLoad]
     internal static class InspectorInjection
     {
+        public enum RebuildStage
+        {
+            EndBeforeRepaint,
+            PostfixAfterRepaint
+        }
+        
         const int UpdateRate = 10;
+        
+        internal static Action<EditorWindow, RebuildStage> onInspectorRebuild;
         
         static int editorFrames = UpdateRate;
         static EditorWindow lastFocusedWindow;
-        
+
         static Dictionary<EditorWindow, SmartInspector> InjectedInspectors = new Dictionary<EditorWindow, SmartInspector>();
         
         
@@ -51,18 +60,30 @@ namespace AV.Inspector
                 if (!InjectedInspectors.ContainsKey(window))
                 {
                     if (SmartInspector.TryInject(window, out var inspector))
+                    {
+                        onInspectorRebuild += inspector.OnRebuildContent;
                         InjectedInspectors.Add(window, inspector);
+                    }
                 }
             }
         }
 
         internal static void TryReinjectWindow(EditorWindow window)
         {
-            InjectedInspectors.Remove(window);
+            if (InjectedInspectors.TryGetValue(window, out var inspector))
+            {
+                onInspectorRebuild -= inspector.OnRebuildContent;
+                InjectedInspectors.Remove(window);
+            }
 
             // Make sure to re-inject when switching between inspector modes, or other stuff
             FindInspectorWindowsAndInject();
             EditorApplication.delayCall += FindInspectorWindowsAndInject;
+        }
+
+        internal static bool TryGetInspector(EditorWindow window, out SmartInspector inspector)
+        {
+            return InjectedInspectors.TryGetValue(window, out inspector);
         }
     }
 }
