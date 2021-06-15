@@ -86,11 +86,15 @@ namespace AV.Inspector
 
             if (target is Component)
             {
-                var imgui = inspector.Query<IMGUIContainer>().First();
-                
-                // Dragging is calculated based on IMGUI layout
-                imgui.style.paddingBottom = ComponentPaddingBottom;
-                inspector.style.paddingBottom = 0;
+                var inspectorContainer = inspector.Query<IMGUIContainer>().First() ?? 
+                                         inspector.Query(className: "unity-inspector-element__custom-inspector-container").First();
+
+                if (inspectorContainer != null)
+                {
+                    // Dragging is calculated based on container layout (it ignores InspectorElement padding)
+                    inspectorContainer.style.paddingBottom = ComponentPaddingBottom;
+                    inspector.style.paddingBottom = 0;
+                }
             }
             
             __instance.RegisterCallback<AttachToPanelEvent>(OnAttachToPanel);
