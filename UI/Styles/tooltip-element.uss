@@ -1,0 +1,22 @@
+
+TooltipElement {
+    position: absolute;
+}
+
+TextElement {
+    left: -50%;
+    
+    overflow: scroll;
+    
+    /*
+    background-color: rgba(245, 245, 245, 1);
+    border-color: rgba(200, 200, 200, 1);*/
+    
+    background-color: rgba(42, 42, 42, 1);
+    border-color: rgba(54, 54, 54, 1);
+    
+    padding: 4 5 4 5;
+    
+    border-width: 1;
+    border-radius: 4;
+}

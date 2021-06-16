@@ -68,7 +68,7 @@ namespace AV.Inspector
 
 				if (original == null)
 				{
-					Debug.LogError($"Null MethodBase for {harmony.Id} patching!");
+					Debug.LogError($"Null MethodBase for {GetType().Name}, {harmony.Id} patching!");
 					continue;
 				}
 				

@@ -28,6 +28,7 @@ namespace AV.Inspector
         internal VisualElement mainContainer;
         internal VisualElement editorsList;
         internal VisualElement gameObjectEditor;
+        internal TooltipElement tooltip { get; private set; }
 
         internal List<EditorElement> editors;
 
@@ -35,7 +36,7 @@ namespace AV.Inspector
         {
             this.propertyEditor = propertyEditor;
             this.tracker = PropertyEditorRef.GetTracker(propertyEditor);
-
+            
             this.root = propertyEditor.rootVisualElement;
             this.mainContainer = root.Query(className: "unity-inspector-main-container").First();
             this.editorsList = root.Query(className: "unity-inspector-editors-list").First();
@@ -53,7 +54,15 @@ namespace AV.Inspector
             
             if (editorsList == null)
                 return false;
+
+            tooltip = root.Query<TooltipElement>("SmartInspectorTooltip").First();
             
+            if (tooltip == null)
+            {
+                tooltip = new TooltipElement { name = "SmartInspectorTooltip" };
+                root.Add(tooltip);
+            }
+
             root.styleSheets.Add(UIResources.Asset.scrollViewStyle);
             editorsList.styleSheets.Add(UIResources.Asset.componentsHeaderStyle);
             
@@ -151,6 +160,7 @@ namespace AV.Inspector
                 
                 var target = editor.target;
                 var isGo = target is GameObject;
+                var isTransform = target is Transform;
                 
                 inspector.RegisterCallback<GeometryChangedEvent>(evt =>
                 {
@@ -162,9 +172,14 @@ namespace AV.Inspector
                     gameObjectEditor = editorElement;
                     
                 editorElement.EnableInClassList("game-object", isGo);
-                editorElement.EnableInClassList("transform", target is Transform);
+                editorElement.EnableInClassList("transform", isTransform);
                 editorElement.EnableInClassList("component", target is Component);
                 editorElement.EnableInClassList("material", target is Material);
+
+                #if !UNITY_2020_1_OR_NEWER
+                if (isTransform)
+                    editorElement.style.top = -2;
+                #endif
 
                 if (!isGo)
                     editors.Add(new EditorElement
@@ -176,7 +191,11 @@ namespace AV.Inspector
                     });
             }
         }
-        
+
+        public static string GetInspectorTitle(Object obj)
+        {
+            return ObjectNames.GetInspectorTitle(obj).Replace("(Script)", "");
+        }
         /*
         private static void ManipulateEditorElement(VisualElement editorElement, Editor editor)
         {

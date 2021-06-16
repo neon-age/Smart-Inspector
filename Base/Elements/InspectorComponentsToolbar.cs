@@ -19,6 +19,8 @@ namespace AV.Inspector
             
             styleSheets.Add(UIResource.commonStyles);
             styleSheets.Add(UIResource.componentsToolbarStyle);
+            if (!EditorGUIUtility.isProSkin)
+                styleSheets.Add(UIResource.componentsToolbarLightStyle);
 
             Rebuild();
             SwitchEditorTabs();

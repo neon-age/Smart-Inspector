@@ -106,8 +106,10 @@ public class UnityEventCompactDrawer : PropertyDrawer
     {
         var isPro = EditorGUIUtility.isProSkin;
         var color = GUI.color;
-        // Only Light theme looks ugly with reorderable lists :(
-        GUI.color = new Color(1, 1, 1, isPro ? 1 : 0.5f);
+        
+        // Dark-blue color in Light theme looks super ugly with reorderable lists :(
+        focused = isPro ? focused : false;
+        
         ReorderableList.defaultBehaviours.DrawElementBackground(rect, index, active, focused, true);
         GUI.color = color;
     }
@@ -164,6 +166,9 @@ public class UnityEventCompactDrawer : PropertyDrawer
 
         if (m_ReorderableList != null)
         {
+            if (ReorderableList.defaultBehaviours == null)
+                m_ReorderableList.DoList(Rect.zero);
+            
             var oldIndent = EditorGUI.indentLevel;
             EditorGUI.indentLevel = 0;
 

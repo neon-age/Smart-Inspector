@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using HarmonyLib;
 using UnityEditor;
 using static System.Linq.Expressions.Expression;
 using Object = UnityEngine.Object;
@@ -36,7 +37,7 @@ namespace AV.Inspector
         
         static InspectorWindowRef()
         {
-            inspectorModeProperty = type.GetProperty("inspectorMode");
+            inspectorModeProperty = AccessTools.Property(type, "inspectorMode");
             
             gameObjectInspectorType = Type.GetType("UnityEditor.GameObjectInspector, UnityEditor");
             

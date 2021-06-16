@@ -1,6 +1,8 @@
 using System;
 using System.Reflection;
+using HarmonyLib;
 using UnityEditor;
+using UnityEngine;
 using static System.Linq.Expressions.Expression;
 using Object = UnityEngine.Object;
 
@@ -8,9 +10,14 @@ namespace AV.Inspector
 {
     internal static class PropertyEditorRef
     {
-        internal static Type type { get; } = typeof(Editor).Assembly.GetType("UnityEditor.PropertyEditor");
+        internal static Type type { get; } = 
+        #if UNITY_2020_1_OR_NEWER
+            typeof(Editor).Assembly.GetType("UnityEditor.PropertyEditor");
+        #else
+            typeof(Editor).Assembly.GetType("UnityEditor.InspectorWindow");
+        #endif
         
-        static readonly PropertyInfo tracker = type.GetProperty("tracker");
+        static readonly PropertyInfo tracker = AccessTools.Property(type, "tracker");
         
         public static readonly Func<EditorWindow, Object> GetInspectedObject;
         

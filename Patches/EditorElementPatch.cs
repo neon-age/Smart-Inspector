@@ -208,8 +208,12 @@ namespace AV.Inspector
                 return;
             }*/
 
-            __result.y = __result.yMax - DragMarkerHeight + DragMarkerY;
+            __result.y = __result.yMax - DragMarkerHeight;
             __result.height = DragMarkerHeight;
+            
+            #if UNITY_2020_1_OR_NEWER
+            __result.y += DragMarkerY;
+            #endif
         }
     }
 }

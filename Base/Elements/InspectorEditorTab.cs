@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEditorInternal;
@@ -25,7 +26,7 @@ namespace AV.Inspector
         
         readonly SmartInspector inspector = SmartInspector.LastInjected;
         readonly ActiveEditorTracker tracker;
-        
+
         Texture2D preview;
         Texture2D thumbnail;
         VisualElement image;
@@ -45,16 +46,29 @@ namespace AV.Inspector
             AddToClassList(EditorTabClass);
             AddToClassList("toolbar-button");
 
-            RegisterCallback<GeometryChangedEvent>(OnGeometryChange);
-            RegisterCallback<ChangeEvent<bool>>(evt => SetActive(evt.newValue));
+            RegisterCallbacks();
             
             preview = AssetPreview.GetAssetPreview(target);
             thumbnail = AssetPreview.GetMiniThumbnail(target);
             
-            image = new VisualElement().AddClass("small-icon");
+            image = new VisualElement() { pickingMode = PickingMode.Ignore }.AddClass("small-icon");
             Add(image);
             
             this.Get(".unity-toggle__input").RemoveFromHierarchy();
+        }
+
+        void RegisterCallbacks()
+        {
+            RegisterCallback<GeometryChangedEvent>(OnGeometryChange);
+            RegisterCallback<ChangeEvent<bool>>(evt => SetActive(evt.newValue));
+            
+            #if !UNITY_2020_1_OR_NEWER 
+            // Toggle value doesn't change in 2019.4 for some reason (??), so do it manually
+            RegisterCallback<MouseUpEvent>(evt => value = !value);
+            #endif
+
+            RegisterCallback<MouseEnterEvent>(evt => inspector.tooltip.ShowAt(worldBound, name, TooltipElement.Align.Top));
+            RegisterCallback<MouseLeaveEvent>(evt => inspector.tooltip.Hide());
         }
 
         void RestoreTabState()
@@ -92,7 +106,9 @@ namespace AV.Inspector
         // Non-serialized expanding
         void SetVisible(bool visible)
         {
-            tracker.SetVisible(editor.index, visible ? 1 : 0);
+            var index = EditorElementRef.GetEditorIndex(editor.element);
+            
+            tracker.SetVisible(index, visible ? 1 : 0);
             editor.inspector.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
@@ -115,6 +131,8 @@ namespace AV.Inspector
             state = GetState(active, wasExpanded);
             
             PackagePrefs.Set<int>(GetPrefKey(), (int)state);
+            
+            inspector.propertyEditor.Repaint();
         }
 
         void OnGeometryChange(GeometryChangedEvent evt)
@@ -142,7 +160,7 @@ namespace AV.Inspector
             var title = target.name;
             
             if (target is Component component)
-                title = ObjectNames.GetInspectorTitle(component);
+                title = SmartInspector.GetInspectorTitle(component);
             
             return title;
         }

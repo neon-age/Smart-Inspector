@@ -11,7 +11,7 @@ namespace AV.Inspector
         static MethodInfo displayContextMenu = typeof(EditorUtility).GetMethod("DisplayObjectContextMenu", BindingFlags.NonPublic | BindingFlags.Static, null, 
             new [] { typeof(Rect), typeof(Object[]), typeof(int) }, null);
         
-        static Texture2D fileIcon = GetEditorIcon("File");
+        static Texture2D defaultAssetIcon = GetEditorIcon("DefaultAsset Icon");
         static Texture2D warningIcon = GetEditorIcon("console.warnicon");
         
         public static Texture2D GetEditorIcon(string iconName)
@@ -22,7 +22,7 @@ namespace AV.Inspector
         public static Texture2D GetObjectIcon(Object obj)
         {
             if (obj == null)
-                return fileIcon;
+                return defaultAssetIcon;
             
             return EditorGUIUtility.ObjectContent(obj, obj.GetType()).image as Texture2D;
         }
