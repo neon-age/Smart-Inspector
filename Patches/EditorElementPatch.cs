@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using HarmonyLib;
@@ -14,6 +15,8 @@ using Random = UnityEngine.Random;
 
 namespace AV.Inspector
 {
+    // https://github.com/Unity-Technologies/UnityCsReference/blob/2020.2/Modules/UIElementsEditor/Inspector/EditorElement.cs
+    // https://github.com/Unity-Technologies/UnityCsReference/blob/2020.2/Editor/Mono/Inspector/EditorDragging.cs
     internal class EditorElementPatch : PatchBase
     {
         const int ComponentPaddingBottom = 5;
@@ -165,6 +168,9 @@ namespace AV.Inspector
             
             void EnterDrag()
             {
+                if (!IsComponentDragging())
+                    return;
+                
                 dragging = true;
                 
                 if (!IsAnyDragging)
@@ -185,6 +191,20 @@ namespace AV.Inspector
                 dragging = false;
                 ___m_Footer.visible = false;
             }
+        }
+
+        static bool IsComponentDragging()
+        {
+            var draggedObjects = DragAndDrop.objectReferences;
+            
+            if (draggedObjects.Length == 0)
+                return false;
+            if (draggedObjects.All(o => o is Component && !(o is Transform)))
+                return true;
+            if (draggedObjects.All(o => o is MonoScript))
+                return true;
+            
+            return false;
         }
 
         static void GetTargetRect_(ref Rect __result, Rect contentRect)
