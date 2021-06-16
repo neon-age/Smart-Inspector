@@ -33,7 +33,7 @@ https://user-images.githubusercontent.com/29812914/122023147-76ddec80-cdf1-11eb-
 [Twitter](https://twitter.com/_neonage) 
 • [Discord Channel](https://discord.gg/wWpqvwuf8J)
 
-[![image](https://user-images.githubusercontent.com/29812914/121816656-0cb93080-cca7-11eb-954a-344cfd31f530.png)](https://discord.gg/u6g6zUm9G4)
+[![image](https://user-images.githubusercontent.com/29812914/121816656-0cb93080-cca7-11eb-954a-344cfd31f530.png)](https://discord.gg/wWpqvwuf8J)
 
 
 ## Consider Donation! 💊
