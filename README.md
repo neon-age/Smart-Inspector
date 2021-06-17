@@ -32,10 +32,11 @@ From Unity **2019.4** up to **2021.2**!
 ---------------------
 
 ## Contact
-[Twitter](https://twitter.com/_neonage) 
-• [Discord Channel](https://discord.gg/wWpqvwuf8J)
 
-[![image](https://user-images.githubusercontent.com/29812914/121816656-0cb93080-cca7-11eb-954a-344cfd31f530.png)](https://discord.gg/wWpqvwuf8J)
+[![twitter](https://img.shields.io/twitter/follow/_neonage?style=social)](https://twitter.com/_neonage)\
+[![reddit](https://img.shields.io/reddit/user-karma/combined/_neonage?style=social)](https://www.reddit.com/user/_neonage)
+
+[![join discord](https://user-images.githubusercontent.com/29812914/121816656-0cb93080-cca7-11eb-954a-344cfd31f530.png)](https://discord.gg/wWpqvwuf8J)
 
 
 ## Consider Donation! 💊
