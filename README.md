@@ -34,12 +34,12 @@ From Unity **2019.4** up to **2021.2**!
 ## Contact
 
 [![twitter](https://img.shields.io/twitter/follow/_neonage?style=social)](https://twitter.com/_neonage)\
-[![reddit](https://img.shields.io/reddit/user-karma/combined/_neonage?style=social)](https://www.reddit.com/user/_neonage)
+[![discord online](https://img.shields.io/discord/830405926078644254?label=Open%20Labs&logo=discord&style=social)](https://discord.gg/wWpqvwuf8J)
 
 [![join discord](https://user-images.githubusercontent.com/29812914/121816656-0cb93080-cca7-11eb-954a-344cfd31f530.png)](https://discord.gg/wWpqvwuf8J)
 
 
 ## Consider Donation! 💊
-[paypal.me/neonage](https://paypal.me/neonage) • [Patreon](https://www.patreon.com/neonage?fan_landing=true)
-
+[![paypal](https://user-images.githubusercontent.com/29812914/122331051-67c87d00-cf5e-11eb-8668-5c0640c613eb.png)](https://paypal.me/neonage)\
 [![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/L4L02M51R)
+[![patreon](https://user-images.githubusercontent.com/29812914/122331278-be35bb80-cf5e-11eb-8eb3-89540d70a9cd.png)](https://www.patreon.com/neonage?fan_landing=true)
