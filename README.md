@@ -40,7 +40,7 @@ From Unity **2019.4** up to **2021.2**!
 
 
 ## Consider Sponsoring! 💊
-Pay a fee of 7+$ and get '**Sponsor**' Discord role, with higher **priority support**!
+Donate a fee of 7+$ and get '**Sponsor**' Discord role, with higher **priority support**!
 
 [![paypal](https://user-images.githubusercontent.com/29812914/122331051-67c87d00-cf5e-11eb-8668-5c0640c613eb.png)](https://paypal.me/neonage)\
 [![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/L4L02M51R)
