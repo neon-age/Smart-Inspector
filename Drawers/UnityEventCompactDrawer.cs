@@ -1,10 +1,8 @@
-#if UNITY_EDITOR
 // Unity C# reference source
 // https://github.com/Unity-Technologies/UnityCsReference/blob/master/Editor/Mono/Inspector/UnityEventDrawer.cs
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Text;
 using UnityEngine;
@@ -549,4 +547,3 @@ public class UnityEventCompactDrawer : PropertyDrawer
         m_LastSelectedIndex = list.index;
     }
 }
-#endif

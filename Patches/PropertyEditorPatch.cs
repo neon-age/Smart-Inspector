@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using HarmonyLib;
 using UnityEditor;
-using UnityEngine;
 
 namespace AV.Inspector
 {
