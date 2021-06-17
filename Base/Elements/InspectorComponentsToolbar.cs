@@ -37,11 +37,14 @@ namespace AV.Inspector
                 if (!target)
                     continue;
 
-                var button = new InspectorEditorTab(editor);
+                var tab = new InspectorEditorTab(editor);
                 
-                tabsList.Add(button);
+                if (string.IsNullOrEmpty(tab.name))
+                    continue;
                 
-                button.RegisterCallback<ChangeEvent<bool>>(_ => SwitchEditorTabs());
+                tabsList.Add(tab);
+                
+                tab.RegisterCallback<ChangeEvent<bool>>(_ => SwitchEditorTabs());
             }
         }
 
