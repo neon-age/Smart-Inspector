@@ -25,9 +25,9 @@ From Unity **2019.4** up to **2021.2**!
 
 | **How to install?** | |
 |-------------|-------------|
-| Via [OpenUPM](https://openupm.com/packages/com.av.smart-inspector/) / [Package Installer](https://package-installer.glitch.me/v1/installer/OpenUPM/com.av.smart-inspector?registry=https%3A%2F%2Fpackage.openupm.com)    | Auto-install and add scoped registry, providing verified [Releases](https://github.com/neon-age/Smart-Inspector/releases) to UPM |
-| [Clone](https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/cloning-a-repository-from-github/cloning-a-repository) and install as [local package](https://docs.unity3d.com/Manual/upm-ui-local.html)     | Be up-to-date with repo, freely modify a package |
-| Using [Git URL](https://docs.unity3d.com/Manual/upm-ui-giturl.html) | Simple, but not recommended - no updates, no version control  |
+| [Clone](https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/cloning-a-repository-from-github/cloning-a-repository#cloning-a-repository-to-github-desktop) and install as [local package](https://docs.unity3d.com/Manual/upm-ui-local.html)     | Be up-to-date with repo, freely modify a package  |
+| Via [OpenUPM](https://openupm.com/packages/com.av.smart-inspector/) / [Package Installer](https://package-installer.glitch.me/v1/installer/OpenUPM/com.av.smart-inspector?registry=https%3A%2F%2Fpackage.openupm.com)    | Auto-install and add scoped registry, providing [verified Releases](https://github.com/neon-age/Smart-Inspector/releases) to UPM |
+| Using [Git URL](https://docs.unity3d.com/Manual/upm-ui-giturl.html) | Not recommended - no updates, no version control  |
 
 ---------------------
 
