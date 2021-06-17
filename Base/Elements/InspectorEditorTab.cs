@@ -62,8 +62,8 @@ namespace AV.Inspector
             RegisterCallback<GeometryChangedEvent>(OnGeometryChange);
             RegisterCallback<ChangeEvent<bool>>(evt => SetActive(evt.newValue));
             
-            #if !UNITY_2020_1_OR_NEWER 
-            // Toggle value doesn't change in 2019.4 for some reason (??), so do it manually
+            #if !UNITY_2020_2_OR_NEWER 
+            // Toggle value doesn't change in 2019.4 and 2020.1 for some reason (??), so do it manually
             RegisterCallback<MouseUpEvent>(evt => value = !value);
             #endif
 
