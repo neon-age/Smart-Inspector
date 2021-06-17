@@ -137,7 +137,7 @@ namespace AV.Inspector
         {
             RetrieveEditorElements();
             var toolbar = root.Query<InspectorComponentsToolbar>().First();
-            toolbar.Rebuild();
+            toolbar?.Rebuild();
         }
 
         void RetrieveEditorElements()
