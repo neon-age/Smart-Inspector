@@ -158,6 +158,9 @@ namespace AV.Inspector
                 var editor = EditorElementRef.GetEditor(editorElement);
                 var editorIndex = EditorElementRef.GetEditorIndex(editorElement);
                 
+                if (editor == null)
+                    return;
+                
                 var target = editor.target;
                 var isGo = target is GameObject;
                 var isTransform = target is Transform;
