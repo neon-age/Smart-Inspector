@@ -159,7 +159,7 @@ namespace AV.Inspector
                 var editorIndex = EditorElementRef.GetEditorIndex(editorElement);
                 
                 if (editor == null)
-                    return;
+                    continue;
                 
                 var target = editor.target;
                 var isGo = target is GameObject;
