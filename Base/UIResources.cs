@@ -21,17 +21,17 @@ namespace AV.Inspector
         }
         
         [Header("Style Sheets")]
-        public StyleSheet commonStyles;
-        public StyleSheet tooltipStyle;
-        public StyleSheet scrollViewStyle;
-        public StyleSheet componentsHeaderStyle;
-        public StyleSheet componentsToolbarStyle;
-        public StyleSheet componentsToolbarLightStyle;
-        public StyleSheet inspectorMainToolbarStyle;
+        public StyleSheet commonStyles = default;
+        public StyleSheet tooltipStyle = default;
+        public StyleSheet scrollViewStyle = default;
+        public StyleSheet componentsHeaderStyle = default;
+        public StyleSheet componentsToolbarStyle = default;
+        public StyleSheet componentsToolbarLightStyle = default;
+        public StyleSheet inspectorMainToolbarStyle = default;
         
         [Header("Icons")]
-        public Texture2D pinIcon;
-        public Texture2D debugIcon;
+        public Texture2D pinIcon = default;
+        public Texture2D debugIcon = default;
         
         bool fixedUIToolkitReferences;
         
