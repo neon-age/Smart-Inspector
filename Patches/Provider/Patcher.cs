@@ -19,8 +19,12 @@ namespace AV.Inspector
 
 		[InitializeOnLoadMethod]
 		//[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
-		private static async void Init()
+		static async void Init()
 		{
+			// https://github.com/neon-age/Smart-Inspector/issues/5
+			if (Application.isBatchMode)
+				return;
+			
 			GetPatches();
 			
 			ApplyPatches(PatchBase.Apply.OnLoad);
