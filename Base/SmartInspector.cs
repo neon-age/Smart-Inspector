@@ -161,16 +161,27 @@ namespace AV.Inspector
                 var target = editor.target;
                 var isGo = target is GameObject;
                 var isTransform = target is Transform;
-                
-                inspector.RegisterCallback<GeometryChangedEvent>(evt =>
+
+                if (!inspector.ClassListContains("inspector"))
                 {
-                    var isExpanded = InternalEditorUtility.GetIsInspectorExpanded(target);
-                    editorElement.EnableInClassList("is-expanded", isExpanded);
-                });
+                    SetupInspectorElement();
+                    inspector.AddToClassList("inspector");
+                }
+
+                void SetupInspectorElement()
+                {
+                    inspector.RegisterCallback<GeometryChangedEvent>(evt =>
+                    {
+                        if (editorElement == null)
+                            return;
+                        var isExpanded = InternalEditorUtility.GetIsInspectorExpanded(target);
+                        editorElement.EnableInClassList("is-expanded", isExpanded);
+                    });
+                }
 
                 if (isGo)
                     gameObjectEditor = editorElement;
-                    
+                
                 editorElement.EnableInClassList("game-object", isGo);
                 editorElement.EnableInClassList("transform", isTransform);
                 editorElement.EnableInClassList("component", target is Component);
