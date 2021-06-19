@@ -5,8 +5,9 @@ Peek multiple components without scrolling or expanding. Supports Gizmos!
 
 https://user-images.githubusercontent.com/29812914/121815548-3e2efd80-cca1-11eb-969d-a5f698995e7d.mp4
 
+### Snappy Tooltip
 
-
+https://user-images.githubusercontent.com/29812914/122633069-c75e8e00-d100-11eb-88da-dc3995e15bc5.mp4
 
 ### **Compact UnityEvents** 
 Collapsing and Reordering by default.
