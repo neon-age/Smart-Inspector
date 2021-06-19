@@ -45,3 +45,5 @@ Donate a fee of 7+$ and get '**Sponsor**' Discord role, with higher **priority s
 [![paypal](https://user-images.githubusercontent.com/29812914/122331051-67c87d00-cf5e-11eb-8668-5c0640c613eb.png)](https://paypal.me/neonage)\
 [![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/neonage)
 [![patreon](https://user-images.githubusercontent.com/29812914/122331278-be35bb80-cf5e-11eb-8eb3-89540d70a9cd.png)](https://www.patreon.com/neonage)
+
+P.S. Prefer **Ko-Fi** for pledging, it takes **0% donation fee** and has no payout delay!
