@@ -6,6 +6,7 @@ using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
+using EditorElement = AV.Inspector.Runtime.SmartInspector.EditorElement;
 
 namespace AV.Inspector
 {
@@ -22,9 +23,9 @@ namespace AV.Inspector
             WasExpanded = 2, // Was inspector expanded before tab activation?
         }
         
-        public readonly SmartInspector.EditorElement editor;
+        public readonly EditorElement editor;
         
-        readonly SmartInspector inspector = SmartInspector.LastInjected;
+        readonly SmartInspector inspector = SmartInspector.RebuildingInspector;
         readonly ActiveEditorTracker tracker;
 
         Texture2D preview;
@@ -34,7 +35,7 @@ namespace AV.Inspector
         Object target => editor.target;
         
         
-        public InspectorEditorTab(SmartInspector.EditorElement editor)
+        public InspectorEditorTab(EditorElement editor)
         {
             this.editor = editor;
             this.tracker = PropertyEditorRef.GetTracker(inspector.propertyEditor);

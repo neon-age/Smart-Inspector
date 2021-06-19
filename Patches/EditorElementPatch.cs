@@ -12,6 +12,7 @@ using UnityEngine.UIElements;
 using UnityEngine.UIElements.Experimental;
 using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
+using EditorElement = AV.Inspector.Runtime.SmartInspector.EditorElement;
 
 namespace AV.Inspector
 {
@@ -19,8 +20,6 @@ namespace AV.Inspector
     // https://github.com/Unity-Technologies/UnityCsReference/blob/2020.2/Editor/Mono/Inspector/EditorDragging.cs
     internal class EditorElementPatch : PatchBase
     {
-        const int ComponentPaddingBottom = 5;
-        
         const int LongHoldMS = 600;
         const int SlowMouseMoveDelayMS = 400;
         const float SlowMouseDeltaThreshold = 40;
@@ -54,9 +53,6 @@ namespace AV.Inspector
             onPerformDrag?.Invoke();
             onPerformDrag = null;
             IsAnyDragging = false;
-            
-            var window = (EditorWindow)___m_InspectorWindow;
-            InspectorInjection.TryGetInspector(window, out var inspector);
         }
 
         static bool _UpdateInspectorVisibility(VisualElement __instance)
@@ -65,46 +61,33 @@ namespace AV.Inspector
             return false;
         }
 
-        static void DeconstructEditorElement(VisualElement element, out Editor editor, out int editorIndex, out Object target)
+        static void Init_(VisualElement __instance, IMGUIContainer ___m_Header, IMGUIContainer ___m_Footer, EditorWindow ___inspectorWindow)
         {
-            editor = EditorElementRef.GetEditor(element);
-            editorIndex = EditorElementRef.GetEditorIndex(element);
-            target = editor.target;
-        }
+            var smartInspector = SmartInspector.RebuildingInspector;
 
-        static void Init_(VisualElement __instance, IMGUIContainer ___m_Header, IMGUIContainer ___m_Footer, object ___inspectorWindow)
-        {
-            ___m_Header.AddToClassList("header");
-            ___m_Footer.AddToClassList("footer");
-            __instance.AddToClassList("editor-element");
-            
-            var dragging = false;
-            var window = (EditorWindow)___inspectorWindow;
-            
-            var editorsList = (VisualElement)null;
+            var editor = EditorElementRef.GetEditor(__instance);
+            var editorIndex = EditorElementRef.GetEditorIndex(__instance);
             var inspector = (VisualElement)get_m_InspectorElement.Invoke(__instance, null);
 
-            DeconstructEditorElement(__instance, out var editor, out var index, out var target);
+            var data = new EditorElement(__instance)
+            {
+                index = editorIndex,
+                header = ___m_Header,
+                inspector = inspector,
+                footer = ___m_Footer,
+                editor = editor
+            };
+            smartInspector.SetupEditorElement(data);
+            
+            var dragging = false;
+            var window = ___inspectorWindow;
             //var tracker = PropertyEditorRef.GetTracker(window);
 
-            if (target is Component)
-            {
-                var inspectorContainer = inspector.Query<IMGUIContainer>().First() ?? 
-                                         inspector.Query(className: "unity-inspector-element__custom-inspector-container").First();
-
-                if (inspectorContainer != null)
-                {
-                    // Dragging is calculated based on container layout (it ignores InspectorElement padding)
-                    inspectorContainer.style.paddingBottom = ComponentPaddingBottom;
-                    inspector.style.paddingBottom = 0;
-                }
-            }
-            
             __instance.RegisterCallback<AttachToPanelEvent>(OnAttachToPanel);
 
             void OnAttachToPanel(AttachToPanelEvent _)
             {
-                editorsList = __instance.parent;
+                data.list = __instance.parent;
             }
             
             // Footer == Drag/Drop Area

@@ -6,7 +6,7 @@ using UnityEngine.UIElements;
 
 namespace AV.Inspector
 {
-    internal class InspectorComponentsToolbar : InspectorElement
+    internal class InspectorComponentsToolbar : VisualElement
     {
         static UIResources UIResource => UIResources.Asset;
 
@@ -22,16 +22,18 @@ namespace AV.Inspector
             if (!EditorGUIUtility.isProSkin)
                 styleSheets.Add(UIResource.componentsToolbarLightStyle);
 
-            Rebuild();
             SwitchEditorTabs();
         }
 
-        public void Rebuild()
+        public void Rebuild(SmartInspector inspector)
         {
             tabsList.Clear();
-
-            foreach (var editor in Inspector.editors)
+            
+            foreach (var editor in inspector.editors.Values)
             {
+                if (editor.element.HasClass("game-object"))
+                    continue;
+                
                 var target = editor.editor.target;
                 
                 if (!target)

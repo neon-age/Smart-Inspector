@@ -1,7 +1,9 @@
 {
     "name": "AV.Inspector",
     "rootNamespace": "AV.Inspector",
-    "references": [],
+    "references": [
+        "GUID:5bfd80592c1d75544a34ca5910633008"
+    ],
     "includePlatforms": [
         "Editor"
     ],
