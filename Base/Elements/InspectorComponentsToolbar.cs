@@ -48,6 +48,8 @@ namespace AV.Inspector
                 
                 tab.RegisterCallback<ChangeEvent<bool>>(_ => SwitchEditorTabs());
             }
+
+            SwitchEditorTabs();
         }
 
         void SwitchEditorTabs()
