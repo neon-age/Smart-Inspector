@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using AV.Inspector.Runtime;
 using HarmonyLib;
 using UnityEditor;
 using UnityEditor.Experimental.SceneManagement;
@@ -26,6 +27,21 @@ namespace AV.Inspector
         }
         
         static Dictionary<Editor, PrefabAssetTarget> prefabTargets = new Dictionary<Editor, PrefabAssetTarget>();*/
+
+        /*
+        [InitializeOnInspector]
+        static void OnInspector()
+        {
+            Runtime.SmartInspector.OnSetupEditorElement += x =>
+            {
+                if (x.header.name == "Prefab ImporterHeader")
+                {
+                    // Hide vanilla prefab header, so we can make our own
+                    x.header.style.display = DisplayStyle.None;
+                    x.inspector.style.display = DisplayStyle.None;
+                }
+            };
+        }*/
         
         protected override IEnumerable<Patch> GetPatches()
         {

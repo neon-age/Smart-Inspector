@@ -234,12 +234,6 @@ namespace AV.Inspector
             }
             void SetupHeader()
             {
-                if (header.name == "Prefab ImporterHeader")
-                {
-                    // Hide vanilla prefab header, so we can make our own
-                    header.style.display = DisplayStyle.None;
-                    inspector.style.display = DisplayStyle.None;
-                }
             }
             void SetupInspectorElement()
             {
