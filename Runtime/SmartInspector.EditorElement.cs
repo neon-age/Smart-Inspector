@@ -11,7 +11,7 @@ namespace AV.Inspector.Runtime
             public const string UserElementClass = "user-element";
 
             public override VisualElement x => element;
-
+            
             public InspectorElement list { get; internal set; }
             public InspectorElement element { get; internal set; }
             public InspectorElement header { get; internal set; }
@@ -22,6 +22,7 @@ namespace AV.Inspector.Runtime
 
 #if UNITY_EDITOR
             public Editor editor { get; internal set; }
+            public ActiveEditorTracker tracker { get; internal set; }
 
             public Object target => editor.target;
             public Object[] targets => editor.targets;

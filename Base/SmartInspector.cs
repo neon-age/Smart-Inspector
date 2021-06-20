@@ -31,8 +31,8 @@ namespace AV.Inspector
         internal enum RebuildStage
         {
             BeforeEditorElements,
-            OnInject,
-            AfterRepaint
+            AfterRepaint,
+            BeforeRepaint
         }
         
         internal static SmartInspector LastActive;
@@ -42,11 +42,14 @@ namespace AV.Inspector
         
         internal EditorWindow propertyEditor;
         internal ActiveEditorTracker tracker;
+        
         internal VisualElement root;
         internal VisualElement mainContainer;
         internal VisualElement contentViewport;
         internal VisualElement editorsList;
         internal VisualElement gameObjectEditor;
+        
+        internal InspectorComponentsToolbar toolbar;
         internal TooltipElement tooltip { get; private set; }
 
         internal static bool wasLoaded;
@@ -55,14 +58,11 @@ namespace AV.Inspector
         [InitializeOnLoadMethod]
         static void OnLoad() => wasLoaded = false;
         
+        
         internal SmartInspector(EditorWindow propertyEditor)
         {
             this.propertyEditor = propertyEditor;
             this.tracker = PropertyEditorRef.GetTracker(propertyEditor);
-            
-            this.root = propertyEditor.rootVisualElement;
-            this.mainContainer = root.Query(className: "unity-inspector-main-container").First();
-            this.editorsList = root.Query(className: "unity-inspector-editors-list").First();
         }
 
         internal void OnEnable() {}
@@ -81,10 +81,19 @@ namespace AV.Inspector
             root.styleSheets.Add(UIResources.Asset.scrollViewStyle);
             editorsList.styleSheets.Add(UIResources.Asset.componentsHeaderStyle);
         }
-        
-        internal InjectResult TryInject()
+
+        internal void Inject()
+        {
+            var result = TryInject();
+            //Debug.Log(result);
+        }
+        InjectResult TryInject()
         {
             LastActive = this;
+            
+            this.root = propertyEditor.rootVisualElement;
+            this.mainContainer = root.Query(className: "unity-inspector-main-container").First();
+            this.editorsList = root.Query(className: "unity-inspector-editors-list").First();
             
             if (editorsList == null)
                 return InjectResult.NoList;
@@ -97,13 +106,16 @@ namespace AV.Inspector
             if (gameObjectEditor == null)
                 return InjectResult.NoGameObjectEditor;
             
-            if (gameObjectEditor.childCount != 3)
-                return InjectResult.Uninitialized; // Uninitialized
+            //if (gameObjectEditor.childCount != 3)
+            //    return InjectResult.Uninitialized; // Uninitialized
+
+            toolbar = editorsList.Query<InspectorComponentsToolbar>();
             
-            var componentsToolbar = new InspectorComponentsToolbar();
+            if (toolbar == null)
+                toolbar = new InspectorComponentsToolbar();
             
             // Insert after InspectorElement and before Footer
-            gameObjectEditor.Insert(2, componentsToolbar);
+            gameObjectEditor.Insert(2, toolbar);
             
             
             Init();
@@ -137,19 +149,19 @@ namespace AV.Inspector
             FirstInitOnInspectorIfNeeded();
 
             //Debug.Log(stage);
-//
+
             if (stage == RebuildStage.BeforeEditorElements)
             {
                 editors.Clear();
-                //RemoveUserElements();
+                RemoveUserElements();
             }
             
-            if (stage == RebuildStage.OnInject)
+            if (stage == RebuildStage.BeforeRepaint)
             {
                 RebuildToolbar();
                 FixComponentLayout();
             }
-
+            
             if (stage == RebuildStage.AfterRepaint)
             {
                 FixComponentLayout();
@@ -158,19 +170,22 @@ namespace AV.Inspector
 
         void RebuildToolbar()
         {
-            var toolbar = root.Query<InspectorComponentsToolbar>().First();
             toolbar?.Rebuild(this);
         }
         
         void RemoveUserElements()
         {
-            editorsList.Query(className: EditorElement.UserElementClass).ForEach(x => x.RemoveFromHierarchy());
+            editorsList?.Query(className: EditorElement.UserElementClass).ForEach(x =>
+            {
+                //Debug.Log(x);
+                x.RemoveFromHierarchy();
+            });
         }
         void FixComponentLayout()
         {
             // TODO: This gets propagated to all children of component!! Must fix soon! 
             // Fixes an issue when collapsed components kept expanded layout (no idea why!)
-            editorsList.Query(className: "component").ForEach(x =>
+            editorsList?.Query(className: "component").ForEach(x =>
             {
                 x.style.fontSize = 12 + (Random.value / 1000);
             });
@@ -213,7 +228,7 @@ namespace AV.Inspector
                 element.EnableClass("material", x.isMaterial);
                 
                 #if !UNITY_2020_1_OR_NEWER
-                if (isTransform)
+                if (x.isTransform)
                     element.style.top = -2;
                 #endif
             }

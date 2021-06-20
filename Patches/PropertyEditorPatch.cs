@@ -15,6 +15,7 @@ namespace AV.Inspector
             var rebuildContent = AccessTools.Method(PropertyEditorRef.type, "RebuildContentsContainers");
             var endRebuildContent = AccessTools.Method(PropertyEditorRef.type, "EndRebuildContentContainers");
 
+            
             yield return new Patch(onEnable, postfix: nameof(OnEnable_));
             yield return new Patch(onDisable, nameof(_OnDisable));
             
@@ -26,11 +27,16 @@ namespace AV.Inspector
 
         static void OnEnable_(EditorWindow __instance)
         {
-            if (!SmartInspector.Injected.TryGetValue(__instance, out var inspector))
-                inspector = new SmartInspector(__instance);
+            InitInspector(__instance);
+        }
 
-            inspector.TryInject();
+        static SmartInspector InitInspector(EditorWindow window)
+        {
+            var inspector = new SmartInspector(window);
+            SmartInspector.Injected.AddOrAssign(window, inspector);
+            
             inspector.OnEnable();
+            return inspector;
         }
         
         static void _OnDisable(EditorWindow __instance)
@@ -43,27 +49,23 @@ namespace AV.Inspector
         }
 
         
-        static void _RebuildContentsContainers(EditorWindow __instance, out SmartInspector __state)
+        static void _RebuildContentsContainers(EditorWindow __instance)
         {
-            __state = null;
-            
-            //SmartInspector.Injected.TryRemove(__instance);
+            if (!SmartInspector.Injected.TryGetValue(__instance, out var inspector))
+            {
+                inspector = InitInspector(__instance);
+            }
 
-            if (!SmartInspector.Injected.TryGetValue(__instance, out __state))
-                __state = new SmartInspector(__instance);
-            
-            SmartInspector.RebuildingInspector = __state;
-            __state.OnRebuildContent(SmartInspector.RebuildStage.BeforeEditorElements);
+            SmartInspector.RebuildingInspector = inspector;
+            inspector.OnRebuildContent(SmartInspector.RebuildStage.BeforeEditorElements);
         }
         
-        static void RebuildContentsContainers_(EditorWindow __instance, SmartInspector __state)
+        static void RebuildContentsContainers_(EditorWindow __instance)
         {
-            if (__state == null) 
+            if (!SmartInspector.Injected.TryGetValue(__instance, out var inspector))
                 return;
-            
-            SmartInspector.Injected.TryAdd(__instance, __state);
 
-            __state.OnRebuildContent(SmartInspector.RebuildStage.OnInject);
+            inspector.OnRebuildContent(SmartInspector.RebuildStage.AfterRepaint);
 
 #if !UNITY_2020_1_OR_NEWER
             EndRebuildContentContainers_(__instance);
@@ -76,7 +78,10 @@ namespace AV.Inspector
             if (!SmartInspector.Injected.TryGetValue(__instance, out var inspector))
                 return;
             
-            inspector.OnRebuildContent(SmartInspector.RebuildStage.AfterRepaint);
+            // Inject only after all EditorElements are present
+            inspector.Inject();
+            
+            inspector.OnRebuildContent(SmartInspector.RebuildStage.BeforeRepaint);
         }
     }
 }

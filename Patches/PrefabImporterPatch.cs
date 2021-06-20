@@ -4,6 +4,7 @@ using System.Reflection;
 using HarmonyLib;
 using UnityEditor;
 using UnityEditor.Experimental.SceneManagement;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -17,13 +18,14 @@ namespace AV.Inspector
 
         static GUIContent tempContent = new GUIContent();
 
+        /*
         class PrefabAssetTarget
         {
             public Object assetTarget;
             public Object variantBase;
         }
         
-        static Dictionary<Editor, PrefabAssetTarget> prefabTargets = new Dictionary<Editor, PrefabAssetTarget>();
+        static Dictionary<Editor, PrefabAssetTarget> prefabTargets = new Dictionary<Editor, PrefabAssetTarget>();*/
         
         protected override IEnumerable<Patch> GetPatches()
         {
@@ -32,16 +34,19 @@ namespace AV.Inspector
             assetTargetInfo = AccessTools.Property(importerType, "assetTarget");
             cacheHasMixedBaseInfo = AccessTools.Method(importerType, "CacheHasMixedBaseVariants");
             openPrefab = AccessTools.Method(typeof(PrefabStageUtility), "OpenPrefab", new [] { typeof(string) });
-
+            
+            yield break;
+/*
             var onEnable = AccessTools.Method(importerType, "OnEnable");
             var onInspectorGUI = AccessTools.Method(importerType, "OnInspectorGUI");
             var onHeaderControlsGUI = AccessTools.Method(importerType, "OnHeaderControlsGUI");
 
             yield return new Patch(onEnable, postfix: nameof(OnEnable_));
             yield return new Patch(onInspectorGUI, nameof(_OnInspectorGUI), apply: Apply.OnGUI);
-            yield return new Patch(onHeaderControlsGUI, nameof(_OnHeaderControlsGUI), nameof(OnHeaderControlsGUI_), apply: Apply.OnGUI);
+            yield return new Patch(onHeaderControlsGUI, nameof(_OnHeaderControlsGUI), nameof(OnHeaderControlsGUI_), apply: Apply.OnGUI);*/
         }
 
+        /*
         static void OnEnable_(Editor __instance)
         {
             var assetTarget = (Object)assetTargetInfo.GetValue(__instance);
@@ -116,6 +121,6 @@ namespace AV.Inspector
         static void OnHeaderControlsGUI_(Editor __instance)
         {
             return;
-        }
+        }*/
     }
 }

@@ -45,6 +45,7 @@ namespace AV.Inspector
             yield return new Patch(AccessTools.Method(EditorDraggingType, "HandleDragPerformEvent"), prefix: nameof(_HandleDragPerformEvent));
             
             yield return new Patch(AccessTools.Method(EditorElementRef.type, "Init"), postfix: nameof(Init_));
+            yield return new Patch(AccessTools.Method(EditorElementRef.type, "Reinit"), postfix: nameof(Reinit_));
             yield return new Patch(AccessTools.Method(EditorElementRef.type, "UpdateInspectorVisibility"), prefix: nameof(_UpdateInspectorVisibility));
         }
 
@@ -61,27 +62,42 @@ namespace AV.Inspector
             return false;
         }
 
+        static EditorElement CreateEditorElement(VisualElement element, VisualElement header, VisualElement footer, EditorWindow window)
+        {
+            var editor = EditorElementRef.GetEditor(element);
+            var editorIndex = EditorElementRef.GetEditorIndex(element);
+            var inspector = (VisualElement)get_m_InspectorElement.Invoke(element, null);
+            var tracker = PropertyEditorRef.GetTracker(window);
+            
+            return new EditorElement(element)
+            {
+                index = editorIndex,
+                header = header,
+                inspector = inspector,
+                footer = footer,
+                editor = editor,
+                tracker = tracker,
+            };
+        }
+        
+        static void Reinit_(VisualElement __instance, IMGUIContainer ___m_Header, IMGUIContainer ___m_Footer, EditorWindow ___inspectorWindow)
+        {
+            var smartInspector = SmartInspector.RebuildingInspector;
+            
+            var data = CreateEditorElement(__instance, ___m_Header, ___m_Footer, ___inspectorWindow);
+            smartInspector.SetupEditorElement(data);
+        }
+        
         static void Init_(VisualElement __instance, IMGUIContainer ___m_Header, IMGUIContainer ___m_Footer, EditorWindow ___inspectorWindow)
         {
             var smartInspector = SmartInspector.RebuildingInspector;
+            var window = ___inspectorWindow;
 
-            var editor = EditorElementRef.GetEditor(__instance);
-            var editorIndex = EditorElementRef.GetEditorIndex(__instance);
-            var inspector = (VisualElement)get_m_InspectorElement.Invoke(__instance, null);
-
-            var data = new EditorElement(__instance)
-            {
-                index = editorIndex,
-                header = ___m_Header,
-                inspector = inspector,
-                footer = ___m_Footer,
-                editor = editor
-            };
+            var data = CreateEditorElement(__instance, ___m_Header, ___m_Footer, ___inspectorWindow);
             smartInspector.SetupEditorElement(data);
             
             var dragging = false;
-            var window = ___inspectorWindow;
-            //var tracker = PropertyEditorRef.GetTracker(window);
+           
 
             __instance.RegisterCallback<AttachToPanelEvent>(OnAttachToPanel);
 
