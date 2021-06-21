@@ -11,12 +11,6 @@ namespace AV.Inspector
         static bool Nan(float value) => float.IsNaN(value);
 
 
-        public static void AlignSelf(this IStyle style, Align align)
-        {
-            style.alignSelf = align;
-        }
-        
-        
         public static void SetSize(this IStyle style, float width = n, float height = n)
         {
             if (!Nan(width)) style.width = width;

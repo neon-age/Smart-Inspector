@@ -1,0 +1,20 @@
+
+Button .content-container {
+    flex-direction: row;
+    align-self: center;
+}
+Button .icon {
+}
+Button Text {
+}
+
+
+.icon {
+    width: 16;
+    height: 16;
+    
+    flex-grow: 1;
+    flex-shrink: 0;
+    
+    margin-right: 2;
+}

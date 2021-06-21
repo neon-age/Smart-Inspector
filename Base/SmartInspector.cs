@@ -14,7 +14,7 @@ using EditorElement = AV.Inspector.Runtime.SmartInspector.EditorElement;
 
 namespace AV.Inspector
 {
-    internal class SmartInspector
+    internal partial class SmartInspector
     {
         const int ComponentPaddingBottom = 5;
         
@@ -24,8 +24,7 @@ namespace AV.Inspector
         {
             NoList,
             NoGameObjectEditor,
-            Uninitialized,
-            Valid
+            Final
         }
 
         internal enum RebuildStage
@@ -34,54 +33,39 @@ namespace AV.Inspector
             AfterRepaint,
             BeforeRepaint
         }
-        
+
         internal static SmartInspector LastActive;
         internal static SmartInspector RebuildingInspector;
         internal static Dictionary<EditorWindow, SmartInspector> Injected = new Dictionary<EditorWindow, SmartInspector>();
 
         
         internal EditorWindow propertyEditor;
-        internal ActiveEditorTracker tracker;
         
-        internal VisualElement root;
-        internal VisualElement mainContainer;
-        internal VisualElement contentViewport;
-        internal VisualElement editorsList;
-        internal VisualElement gameObjectEditor;
+        VisualElement root;
+        VisualElement mainContainer;
+        VisualElement contentViewport;
+        VisualElement editorsList;
+        VisualElement gameObjectEditor;
         
         internal InspectorComponentsToolbar toolbar;
         internal TooltipElement tooltip { get; private set; }
 
-        internal static bool wasLoaded;
+        internal static bool wasAnyLoaded;
         internal readonly Dictionary<VisualElement, EditorElement> editors = new Dictionary<VisualElement, EditorElement>();
 
+        
         [InitializeOnLoadMethod]
-        static void OnLoad() => wasLoaded = false;
+        static void OnLoad() => wasAnyLoaded = false;
         
         
         internal SmartInspector(EditorWindow propertyEditor)
         {
             this.propertyEditor = propertyEditor;
-            this.tracker = PropertyEditorRef.GetTracker(propertyEditor);
         }
 
         internal void OnEnable() {}
         internal void OnDisable() {}
         
-        void Init()
-        {
-            tooltip = root.Query<TooltipElement>("SmartInspectorTooltip").First();
-            
-            if (tooltip == null)
-            {
-                tooltip = new TooltipElement { name = "SmartInspectorTooltip" };
-                root.Add(tooltip);
-            }
-
-            root.styleSheets.Add(UIResources.Asset.scrollViewStyle);
-            editorsList.styleSheets.Add(UIResources.Asset.componentsHeaderStyle);
-        }
-
         internal void Inject()
         {
             var result = TryInject();
@@ -98,6 +82,8 @@ namespace AV.Inspector
             if (editorsList == null)
                 return InjectResult.NoList;
 
+            Init();
+
             var scrollView = root.Query(className: "unity-inspector-root-scrollview").First();
             
             contentViewport = scrollView.Get("unity-content-viewport");
@@ -106,9 +92,6 @@ namespace AV.Inspector
             if (gameObjectEditor == null)
                 return InjectResult.NoGameObjectEditor;
             
-            //if (gameObjectEditor.childCount != 3)
-            //    return InjectResult.Uninitialized; // Uninitialized
-
             toolbar = editorsList.Query<InspectorComponentsToolbar>();
             
             if (toolbar == null)
@@ -118,18 +101,36 @@ namespace AV.Inspector
             gameObjectEditor.Insert(2, toolbar);
             
             
-            Init();
-            return InjectResult.Valid;
+            return InjectResult.Final;
+        }
+        
+        void Init()
+        {
+            tooltip = root.Get<TooltipElement>(".smart-inspector--tooltip");
+            
+            if (tooltip == null)
+            {
+                tooltip = new TooltipElement();
+                tooltip.AddToClassList("smart-inspector--tooltip");
+                root.Add(tooltip);
+            }
+
+            root.styleSheets.Add(mainStyleSheet);
+            
+            root.styleSheets.Add(UIResources.Asset.scrollViewStyle);
+            editorsList.styleSheets.Add(UIResources.Asset.componentsHeaderStyle);
         }
 
         void OnContentViewportLayout(GeometryChangedEvent evt)
         {
+            // Hides scrollbar indentation
             contentViewport.style.marginRight = 0;
         }
 
+        
         void FirstInitOnInspectorIfNeeded()
         {
-            if (wasLoaded) 
+            if (wasAnyLoaded) 
                 return;
             
             foreach (var initOnInspector in InitOnInspectorMethods)
@@ -139,7 +140,7 @@ namespace AV.Inspector
                 }
                 catch (Exception ex) { Debug.LogException(ex); }
             
-            wasLoaded = true;
+            wasAnyLoaded = true;
         }
 
         /// <see cref="PropertyEditorPatch.RebuildContentsContainers_"/>
@@ -149,7 +150,7 @@ namespace AV.Inspector
             FirstInitOnInspectorIfNeeded();
 
             //Debug.Log(stage);
-
+            
             if (stage == RebuildStage.BeforeEditorElements)
             {
                 editors.Clear();
@@ -164,7 +165,6 @@ namespace AV.Inspector
             
             if (stage == RebuildStage.AfterRepaint)
             {
-                FixComponentLayout();
             }
         }
 
@@ -172,10 +172,10 @@ namespace AV.Inspector
         {
             toolbar?.Rebuild(this);
         }
-        
+
         void RemoveUserElements()
         {
-            editorsList?.Query(className: EditorElement.UserElementClass).ForEach(x =>
+            editorsList?.Query(className: Runtime.SmartInspector.UserElementClass).ForEach(x =>
             {
                 //Debug.Log(x);
                 x.RemoveFromHierarchy();
@@ -183,11 +183,15 @@ namespace AV.Inspector
         }
         void FixComponentLayout()
         {
-            // TODO: This gets propagated to all children of component!! Must fix soon! 
-            // Fixes an issue when collapsed components kept expanded layout (no idea why!)
             editorsList?.Query(className: "component").ForEach(x =>
             {
-                x.style.fontSize = 12 + (Random.value / 1000);
+                if (x.resolvedStyle.fontSize == 0) // Not resolved yet
+                    return;
+                
+                // Is there be a proper way to do that?
+                // This magically triggers immediate layout repaint that we need..
+                // Fixes an issue when collapsed components kept expanded layout (no idea why!)
+                x.style.fontSize = 12 + (Random.value / 10000);
             });
         }
 
@@ -210,6 +214,7 @@ namespace AV.Inspector
             inspector.AddClass("inspector");
             footer.AddClass("footer");
             
+            
             SetupEditorElement();
             SetupHeader();
             SetupInspectorElement();
@@ -218,8 +223,8 @@ namespace AV.Inspector
             editors.AddOrAssign(element, x);
             //Debug.Log($"setup {x.name}");
             Runtime.SmartInspector.OnSetupEditorElement?.Invoke(x);
-            
-            
+
+
             void SetupEditorElement()
             {
                 element.EnableClass("game-object", x.isGo);

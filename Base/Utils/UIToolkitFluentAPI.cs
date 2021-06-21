@@ -67,15 +67,26 @@ namespace AV.Inspector
         {
             return query.First() != null;
         }
+
+        public static T Get<T>(this VisualElement target) where T : VisualElement
+        {
+            return target.Query<T>().First();
+        }
+        
         public static VisualElement Get(this VisualElement target, string nameOrClass)
         {
+            return Get<VisualElement>(target, nameOrClass);
+        }
+        
+        public static T Get<T>(this VisualElement target, string nameOrClass) where T : VisualElement
+        {
             if (nameOrClass.StartsWith("."))
-                return target.Query(className: nameOrClass.TrimStart('.'));
+                return target.Query<T>(className: nameOrClass.TrimStart('.'));
             
             if (nameOrClass.StartsWith("#"))
-                return target.Query(name: nameOrClass.TrimStart('#'));
+                return target.Query<T>(name: nameOrClass.TrimStart('#'));
             
-            return target.Query(nameOrClass);
+            return target.Query<T>(nameOrClass);
         }
         #endregion
         

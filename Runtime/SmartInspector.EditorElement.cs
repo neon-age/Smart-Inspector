@@ -6,10 +6,9 @@ namespace AV.Inspector.Runtime
 {
     public static partial class SmartInspector
     {
-        public class EditorElement : InspectorElement
+        /// Note: the class itself is also wrapped around <see cref="InspectorElement"/>
+        public partial class EditorElement : InspectorElement
         {
-            public const string UserElementClass = "user-element";
-
             public override VisualElement x => element;
             
             public InspectorElement list { get; internal set; }
@@ -22,6 +21,7 @@ namespace AV.Inspector.Runtime
 
 #if UNITY_EDITOR
             public Editor editor { get; internal set; }
+            public EditorWindow window { get; internal set; }
             public ActiveEditorTracker tracker { get; internal set; }
 
             public Object target => editor.target;
@@ -38,7 +38,6 @@ namespace AV.Inspector.Runtime
                 this.element = element;
             }
 
-            
             public StyleSheet FindStyleSheet(string name = null, string guid = null) => SmartInspector.FindStyleSheet(name, guid);
             public T FindAsset<T>(string name = null, string guid = null) where T : Object => SmartInspector.FindAsset<T>(name, guid);
             
@@ -47,20 +46,6 @@ namespace AV.Inspector.Runtime
             {
                 target = this.target as T;
                 return target;
-            }
-
-            
-            public InspectorElement NewImage(Texture background)
-            {
-                var image = new VisualElement { style = { backgroundImage = background as Texture2D }};
-                return image;
-            }
-            
-            public InspectorElement NewButton(string text, EventCallback<MouseUpEvent> onUp)
-            {
-                var button = new Button {text = text}.ForInspector();
-                button.Register(onUp);
-                return button;
             }
         }
     }
