@@ -1,0 +1,14 @@
+
+
+.toolbar-button {
+    background-color: rgba(200, 200, 200, 1);
+}
+
+.toolbar-button:hover {
+    background-color: rgba(220, 220, 220, 1);
+}
+
+.toolbar-button:active {
+    background-color: rgba(185, 185, 185, 1);
+}
+

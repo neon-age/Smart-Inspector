@@ -1,0 +1,27 @@
+
+
+
+.component .header {
+    height: 22;
+}
+
+.game-object {
+    margin-bottom: -2;
+}
+
+.component InspectorElement {
+}
+.transform {
+}
+.material {
+    margin-top: 1;
+    margin-bottom: -6;
+}
+.material.is-expanded {
+    margin-bottom: 0;
+}
+.game-object InspectorElement {
+    margin-bottom: 0;
+}
+.go-prefab-importer {
+}

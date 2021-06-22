@@ -1,243 +1,338 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.UIElements;
+using AV.Inspector.Runtime;
+using Object = UnityEngine.Object;
+using Random = UnityEngine.Random;
+using EditorElement = AV.Inspector.Runtime.SmartInspector.EditorElement;
+using Space = AV.Inspector.Runtime.SmartInspector.Space;
 
 namespace AV.Inspector
 {
-    internal class SmartInspector
+    internal partial class SmartInspector
     {
-        public class EditorElement
-        {
-            public VisualElement element;
-            public VisualElement inspector;
-            public Editor editor;
-            public int index;
-            
-            public Object target => editor.target;
-        }
+        const int ComponentPaddingBottom = 5;
         
-        internal static SmartInspector LastInjected;
+        static readonly TypeCache.MethodCollection InitOnInspectorMethods = TypeCache.GetMethodsWithAttribute<InitializeOnInspectorAttribute>();
+
+        internal enum InjectResult
+        {
+            NoList,
+            NoGameObjectEditor,
+            Final
+        }
+
+        internal enum RebuildStage
+        {
+            BeforeEditorElements,
+            AfterRepaint,
+            BeforeRepaint
+        }
+
+        internal class SubData : VisualElement
+        {
+            public SmartInspector smartInspector;
+            public EditorElement element;
+        }
+
+        internal static SmartInspector LastActive;
+        internal static SmartInspector RebuildingInspector;
+        internal static Dictionary<EditorWindow, SmartInspector> Injected = new Dictionary<EditorWindow, SmartInspector>();
+
         
         internal EditorWindow propertyEditor;
         internal ActiveEditorTracker tracker;
-        internal VisualElement root;
-        internal VisualElement mainContainer;
-        internal VisualElement editorsList;
-        internal VisualElement gameObjectEditor;
+        
+        VisualElement root;
+        VisualElement mainContainer;
+        VisualElement contentViewport;
+        VisualElement editorsList;
+        VisualElement gameObjectEditor;
+        
+        internal InspectorTabsBar toolbar;
         internal TooltipElement tooltip { get; private set; }
 
-        internal List<EditorElement> editors;
-
-        SmartInspector(EditorWindow propertyEditor)
+        internal static bool wasAnyLoaded;
+        internal readonly Dictionary<VisualElement, EditorElement> editors = new Dictionary<VisualElement, EditorElement>();
+        
+        [InitializeOnLoadMethod]
+        static void OnLoad() => wasAnyLoaded = false;
+        
+        
+        internal SmartInspector(EditorWindow propertyEditor)
         {
             this.propertyEditor = propertyEditor;
             this.tracker = PropertyEditorRef.GetTracker(propertyEditor);
+        }
+
+        internal void OnEnable() {}
+        internal void OnDisable() {}
+        
+        
+        internal void Inject()
+        {
+            var result = TryInject();
+            //Debug.Log(result);
+        }
+        
+        InjectResult TryInject()
+        {
+            LastActive = this;
             
             this.root = propertyEditor.rootVisualElement;
             this.mainContainer = root.Query(className: "unity-inspector-main-container").First();
             this.editorsList = root.Query(className: "unity-inspector-editors-list").First();
-        }
-
-        public static bool TryInject(EditorWindow propertyEditor, out SmartInspector inspector)
-        {
-            inspector = new SmartInspector(propertyEditor);
-            return inspector.TryInject();
-        }
-        
-        public bool TryInject()
-        {
-            LastInjected = this;
             
             if (editorsList == null)
-                return false;
+                return InjectResult.NoList;
 
-            tooltip = root.Query<TooltipElement>("SmartInspectorTooltip").First();
+            Init();
+
+            var scrollView = root.Query(className: "unity-inspector-root-scrollview").First();
+            
+            contentViewport = scrollView.Query(name: "unity-content-viewport");
+            contentViewport.RegisterCallback<GeometryChangedEvent>(OnContentViewportLayout);
+
+            if (gameObjectEditor == null)
+                return InjectResult.NoGameObjectEditor;
+            
+            toolbar = editorsList.Query<InspectorTabsBar>();
+            
+            if (toolbar == null)
+                toolbar = new InspectorTabsBar();
+            
+            // Insert after InspectorElement and before Footer
+            gameObjectEditor.Insert(2, toolbar);
+            
+            
+            return InjectResult.Final;
+        }
+        
+        void Init()
+        {
+            tooltip = root.Query<TooltipElement>(className: "smart-inspector--tooltip");
             
             if (tooltip == null)
             {
-                tooltip = new TooltipElement { name = "SmartInspectorTooltip" };
+                tooltip = new TooltipElement();
+                tooltip.AddToClassList("smart-inspector--tooltip");
                 root.Add(tooltip);
             }
 
-            root.styleSheets.Add(UIResources.Asset.scrollViewStyle);
-            editorsList.styleSheets.Add(UIResources.Asset.componentsHeaderStyle);
+            root.styleSheets.Add(coreStyles);
             
-            var scrollView = root.Query(className: "unity-inspector-root-scrollview").First();
-            var contentViewport = scrollView.Get("unity-content-viewport");
+            if (!EditorGUIUtility.isProSkin)
+                root.styleSheets.Add(coreStylesLight);
             
-            contentViewport.RegisterCallback<GeometryChangedEvent>(_ => contentViewport.style.marginRight = 0);
-            
-            RetrieveEditorElements();
-
-            var hasMainToolbar = mainContainer.Query<InspectorMainToolbar>().HasAny();
-            if (!hasMainToolbar)
-            {
-                var inspectorToolbar = new InspectorMainToolbar(propertyEditor);
-                inspectorToolbar.RegisterCallback<DetachFromPanelEvent>(_ => InspectorInjection.TryReinjectWindow(propertyEditor));
-                
-                //mainContainer.Insert(0, inspectorToolbar);
-            }
-            
-            if (gameObjectEditor == null)
-                return false;
-            
-            //var inspectorElement = gameObjectEditor.Query<InspectorElement>().First();
-            //if (inspectorElement == null)
-            //    return false; // Wrong editor
-            
-            if (gameObjectEditor.childCount != 3)
-                return false; // Uninitialized
-            
-            //var inspectorObject = PropertyEditorRef.GetInspectedObject(propertyEditor);
-            //Debug.Log(inspectorObject);
-            
-            var componentsToolbar = new InspectorComponentsToolbar();
-            componentsToolbar.RegisterCallback<DetachFromPanelEvent>(_ => InspectorInjection.TryReinjectWindow(propertyEditor));
-            
-            // Insert after InspectorElement and before Footer
-            gameObjectEditor.Insert(2, componentsToolbar);
-            
-            //var gameObjectFooter = gameObjectEditor.Query<InspectorElement>().First();
-            
-            return true;
+            root.styleSheets.Add(scrollViewStyles);
+            editorsList.styleSheets.Add(headerStyles);
         }
 
-        /// <see cref="PropertyEditorPatch.RebuildContentsContainers_"/>
-        public void OnRebuildContent(EditorWindow window, InspectorInjection.RebuildStage stage)
+        void OnContentViewportLayout(GeometryChangedEvent evt)
         {
-            if (window != propertyEditor)
-                return;
+            // Hides scrollbar indentation
+            contentViewport.style.marginRight = 0;
+        }
 
-            if (stage == InspectorInjection.RebuildStage.EndBeforeRepaint)
+        
+        void FirstInitOnInspectorIfNeeded()
+        {
+            if (wasAnyLoaded) 
+                return;
+            
+            foreach (var initOnInspector in InitOnInspectorMethods)
+                try
+                {
+                    initOnInspector.Invoke(null, null);
+                }
+                catch (Exception ex) { Debug.LogException(ex); }
+            
+            wasAnyLoaded = true;
+        }
+
+        
+        /// <see cref="PropertyEditorPatch.RebuildContentsContainers_"/>
+        internal void OnRebuildContent(RebuildStage stage)
+        {
+            RebuildingInspector = this;
+            FirstInitOnInspectorIfNeeded();
+
+            //Debug.Log(stage);
+            
+            if (stage == RebuildStage.BeforeEditorElements)
+            {
+                editors.Clear();
+                RemoveUserElements();
+            }
+            
+            if (stage == RebuildStage.BeforeRepaint)
             {
                 RebuildToolbar();
-                FixComponentLayout();
             }
-
-            if (stage == InspectorInjection.RebuildStage.PostfixAfterRepaint)
+            
+            if (stage == RebuildStage.AfterRepaint)
             {
-                FixComponentLayout();
+                // TODO: Fix one-frame issue when dragged element keeps expanded layout of element that was last there
             }
         }
 
-        void FixComponentLayout()
+        
+        void RebuildToolbar()
         {
-            // Fixes an issue when collapsed components kept expanded layout (no idea why!)
-            editorsList.Query(className: "component").ForEach(x =>
+            toolbar?.Rebuild(this);
+        }
+
+        void RemoveUserElements()
+        {
+            editorsList?.Query(className: Runtime.SmartInspector.UserElementClass).ForEach(x =>
             {
-                x.style.fontSize = 12 + (Random.value / 1000);
+                //Debug.Log(x);
+                x.RemoveFromHierarchy();
             });
         }
+
         
-        public void RebuildToolbar()
+        /// <see cref="EditorElementPatch.Init_"/>
+        public void SetupEditorElement(EditorElement x)
         {
-            RetrieveEditorElements();
-            var toolbar = root.Query<InspectorComponentsToolbar>().First();
-            toolbar?.Rebuild();
-        }
-
-        void RetrieveEditorElements()
-        {
-            this.editors = new List<EditorElement>();
+            var element = x.element;
+            var header = x.header;
+            var inspector = x.inspector;
+            var footer = x.footer;
+            var data = x.Get<SubData>();
             
-            var allEditors = editorsList.Children().ToList();
-            
-            foreach (var editorElement in allEditors)
+            if (x.isGo)
             {
-                if (editorElement.GetType() != EditorElementRef.type)
-                    continue;
+                // Tabs bar is injected inside GO editor
+                gameObjectEditor = element;
+            }
+            
+            element.AddClass("editor-element");
+            header.AddClass("header");
+            inspector.AddClass("inspector");
+            footer.AddClass("footer");
 
-                var inspector = editorElement.Get(".unity-inspector-element");
-                if (inspector == null)
-                    continue;
+            SetupSubData();
+            SetupEditorElement();
+            SetupHeader();
+            SetupInspectorElement();
+            // Footer is manipulated by EditorElementPatch.Init_
+            
+            editors.AddOrAssign(element, x);
+            Runtime.SmartInspector.OnSetupEditorElement?.Invoke(x);
+
+
+            void SetupSubData()
+            {
+                if (data == null)
+                    inspector.Add(data = new SubData());
                 
-                var editor = EditorElementRef.GetEditor(editorElement);
-                var editorIndex = EditorElementRef.GetEditorIndex(editorElement);
+                data.smartInspector = this;
+                data.element = x;
+            }
+            
+            void SetupEditorElement()
+            {
+                x.Register<GeometryChangedEvent>(evt => OnElementLayout(data));
                 
-                if (editor == null)
-                    continue;
+                element.EnableClass("game-object", x.isGo);
+                element.EnableClass("transform", x.isTransform);
+                element.EnableClass("component", x.isComponent);
+                element.EnableClass("material", x.isMaterial);
                 
-                var target = editor.target;
-                var isGo = target is GameObject;
-                var isTransform = target is Transform;
-
-                if (!inspector.ClassListContains("inspector"))
-                {
-                    SetupInspectorElement();
-                    inspector.AddToClassList("inspector");
-                }
-
-                void SetupInspectorElement()
-                {
-                    inspector.RegisterCallback<GeometryChangedEvent>(evt =>
-                    {
-                        if (editorElement == null)
-                            return;
-                        var isExpanded = InternalEditorUtility.GetIsInspectorExpanded(target);
-                        editorElement.EnableInClassList("is-expanded", isExpanded);
-                    });
-                }
-
-                if (isGo)
-                    gameObjectEditor = editorElement;
-                
-                editorElement.EnableInClassList("game-object", isGo);
-                editorElement.EnableInClassList("transform", isTransform);
-                editorElement.EnableInClassList("component", target is Component);
-                editorElement.EnableInClassList("material", target is Material);
-
                 #if !UNITY_2020_1_OR_NEWER
-                if (isTransform)
-                    editorElement.style.top = -2;
+                if (x.isTransform)
+                    element.style.top = -2;
                 #endif
-
-                if (!isGo)
-                    editors.Add(new EditorElement
+            }
+            void SetupHeader()
+            {
+                if (x.isComponent)
+                {
+                    x.header.SetFlexDirection(FlexDirection.RowReverse);
+                    
+                    // Temp solution for component header buttons padding
+                    if (!x.header.Has<Space>("#rightSpace"))
                     {
-                        element = editorElement, 
-                        inspector = inspector,
-                        editor = editor,
-                        index = editorIndex
-                    });
+                        x.header.x.Add(new Space(64) { name = "rightSpace" });
+                    }
+                }
+            }
+            void SetupInspectorElement()
+            {
+                if (x.isComponent) 
+                    SetupComponentInspector();
+            }
+
+            void SetupComponentInspector()
+            {
+                var inspectorContainer = inspector.Get<IMGUIContainer>() ?? 
+                                         inspector.Get(".unity-inspector-element__custom-inspector-container");
+
+                if (inspectorContainer != null)
+                {
+                    // Dragging is calculated based on container layout (it ignores InspectorElement padding)
+                    inspectorContainer.style.paddingBottom = ComponentPaddingBottom;
+                    inspector.style.paddingBottom = 0;
+                }
             }
         }
+
+        void OnElementLayout(SubData data)
+        {
+            var x = data.element;
+
+            if (x.isComponent) OnComponentLayout(x);
+            if (x.isMaterial) OnMaterialLayout(x);
+        }
+
+        void OnComponentLayout(EditorElement x)
+        {
+            // Do this only once on selection change for components
+            if (x.expandedState != -1)
+                return;
+            
+            x.expandedState = InternalEditorUtility.GetIsInspectorExpanded(x.target) ? 1 : 0;
+
+            SetElementVisible(x, x.isExpanded);
+        }
+
+        void OnMaterialLayout(EditorElement x)
+        {
+            var isExpanded = InternalEditorUtility.GetIsInspectorExpanded(x.target);
+
+            if (x.isExpanded != isExpanded)
+            {
+                SetElementVisible(x, isExpanded, changeDisplay: false);
+                
+                // Material doesn't care about our flexing, unless we set global expand state
+                if (x.isMaterial)
+                    InternalEditorUtility.SetIsInspectorExpanded(x.target, x.isExpanded);
+            }
+        }
+        
+        
+        void SetElementVisible(EditorElement x, bool visible, bool changeDisplay = true)
+        {
+            x.expandedState = visible ? 1 : 0;
+            x.element.EnableClass("is-expanded", visible);
+
+            if (changeDisplay)
+                x.inspector.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
+            
+            //Debug.Log($"{x.name} {visible}");
+        }
+        
 
         public static string GetInspectorTitle(Object obj)
         {
             return ObjectNames.GetInspectorTitle(obj).Replace("(Script)", "");
         }
-        /*
-        private static void ManipulateEditorElement(VisualElement editorElement, Editor editor)
-        {
-            var header = editorElement?.Query<IMGUIContainer>().Where(x => x != null && x.name.EndsWith("Header")).First();
-            var footer = editorElement?.Query<IMGUIContainer>().Where(x => x != null && x.name.EndsWith("Footer")).First();
-            
-            if (header == null || footer == null)
-                return;
-            
-            // Can't use EditorElement:hover for some reason, ignore footer hovering instead
-            footer.pickingMode = PickingMode.Ignore;
-            
-            //header.style.display = DisplayStyle.None; // Can't use display, as other inspector methods rely on that
-            header.RegisterCallback<GeometryChangedEvent>(_ =>
-            {
-                header.onGUIHandler = null;
-                header.style.height = 0;
-            });
-
-            var componentHeader = editorElement.Query<ComponentHeaderElement>().First();
-            
-            if (componentHeader == null)
-            {
-                componentHeader = new ComponentHeaderElement(editorElement, editor);
-                header.parent.Insert(0, componentHeader);
-            }
-
-            //header.RemoveFromHierarchy();
-        }*/
     }
 }

@@ -1,0 +1,45 @@
+
+
+HorizontalGroup {
+    align-items: center;
+}
+
+.icon {
+    width: 16;
+    height: 16;
+
+    flex-grow: 1;
+    flex-shrink: 0;
+}
+
+.button {
+    align-self: center;
+}
+.button .content-container {
+    flex-direction: row;
+    align-self: center;
+}
+.button .icon {
+    align-self: center;
+}
+.button Text {
+    align-self: center;
+    margin-left: 2;
+    margin-right: 2;
+}
+
+.toolbar-button {
+    margin: 0 0 0 0;
+    
+    border-radius: 2;
+    border-width: 0 1 0 0;
+    background-color: rgba(64, 64, 64, 1);
+}
+.toolbar-button:hover {
+    background-color: rgba(86, 86, 86, 1);
+}
+.toolbar-button:active {
+    background-color: rgba(98, 98, 98, 1);
+}
+
+
