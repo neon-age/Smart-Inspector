@@ -1,9 +1,16 @@
 # Smart Inspector
  
- ### **Tabbed Inspector** 
+### **Tabbed Inspector** 
 Peek multiple components without scrolling or expanding. Supports Gizmos!
 
 https://user-images.githubusercontent.com/29812914/121815548-3e2efd80-cca1-11eb-969d-a5f698995e7d.mp4
+
+### Fluent Injection API
+Customization without limits, using **fluent UITK API**, instant injection and **must-have helpers**!
+
+https://user-images.githubusercontent.com/29812914/122990585-55bb6400-d3ce-11eb-853a-8f9caa08c87e.mp4
+
+![image (4)](https://user-images.githubusercontent.com/29812914/122992140-00805200-d3d0-11eb-8f5f-049bc54b24ac.png)
 
 ### Snappy Tooltip
 
