@@ -1,6 +1,6 @@
 {
   "name": "com.av.smart-inspector",
-  "version": "0.3.0",
+  "version": "0.6.0",
   "displayName": "Smart Inspector",
   "description": "Keeps your screen real-estate clean with refined, compact UX.",
   "keywords": [
@@ -18,5 +18,6 @@
     "email": "alexander.neonage@gmail.com",
     "url": "https://github.com/neon-age"
   },
-  "unity": "2019.3"
+  "unity": "2019.3",
+  "type": "tool"
 }
