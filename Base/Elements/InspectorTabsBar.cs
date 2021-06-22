@@ -1,4 +1,5 @@
 ﻿
+using AV.Inspector.Runtime;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -6,28 +7,26 @@ using UnityEngine.UIElements;
 
 namespace AV.Inspector
 {
-    internal class InspectorComponentsToolbar : VisualElement
+    internal class InspectorTabsBar : VisualElement
     {
-        static UIResources UIResource => UIResources.Asset;
-
-        readonly VisualElement tabsList = new VisualElement().AddClass("tabs-list");
-
-        public InspectorComponentsToolbar()
+        readonly VisualElement tabsList = new VisualElement();
+        
+        public InspectorTabsBar()
         {
-            Add(tabsList);
-            AddToClassList("components-toolbar");
+            tabsList.AddToClassList("tabs-list");
             
-            styleSheets.Add(UIResource.commonStyles);
-            styleSheets.Add(UIResource.componentsToolbarStyle);
+            Add(tabsList);
+            
+            styleSheets.Add(SmartInspector.tabsBarStyles);
+            
             if (!EditorGUIUtility.isProSkin)
-                styleSheets.Add(UIResource.componentsToolbarLightStyle);
-
-            SwitchEditorTabs();
+                styleSheets.Add(SmartInspector.tabsBarStylesLight);
         }
 
         public void Rebuild(SmartInspector inspector)
         {
-            tabsList.Clear();
+            this.Query<InspectorTab>().ForEach(x => x.RemoveFromHierarchy());
+            
             
             foreach (var editor in inspector.editors.Values)
             {
@@ -39,24 +38,25 @@ namespace AV.Inspector
                 if (!target)
                     continue;
 
-                var tab = new InspectorEditorTab(editor);
+                var tab = new InspectorTab(editor);
                 
                 if (string.IsNullOrEmpty(tab.name))
                     continue;
                 
                 tabsList.Add(tab);
                 
-                tab.RegisterCallback<ChangeEvent<bool>>(_ => SwitchEditorTabs());
+                tab.RegisterCallback<ChangeEvent<bool>>(_ => UpdateEditorsVisibility());
             }
 
-            SwitchEditorTabs();
+            UpdateEditorsVisibility();
         }
 
-        void SwitchEditorTabs()
+        void UpdateEditorsVisibility()
         {
-            var tabs = this.Query<InspectorEditorTab>();
-
+            var tabs = this.Query<InspectorTab>();
+            
             var isAnyActive = false;
+            
             tabs.ForEach(x => {
                 if (x.value)
                     isAnyActive = true;

@@ -10,15 +10,15 @@ namespace AV.Inspector
 {
 	internal static class Patcher
 	{
-		private static readonly string HarmonyID = typeof(Patcher).Assembly.GetName().Name;
+		static readonly string HarmonyID = typeof(Patcher).Assembly.GetName().Name;
 
-		private static Harmony harmony;
-		private static List<PatchBase> patches;
+		static Harmony harmony;
+		static List<PatchBase> patches;
 		
-		private static FieldInfo currentSkinField;
+		static FieldInfo currentSkinField;
 
+		
 		[InitializeOnLoadMethod]
-		//[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
 		static async void Init()
 		{
 			// https://github.com/neon-age/Smart-Inspector/issues/5
@@ -35,7 +35,7 @@ namespace AV.Inspector
 			ApplyPatches(PatchBase.Apply.OnGUI);
 		}
 
-		internal static bool GUISkinHasLoaded()
+		static bool GUISkinHasLoaded()
 		{
 			if (currentSkinField == null)
 				currentSkinField = typeof(GUISkin).GetField("current", BindingFlags.Static | BindingFlags.NonPublic);
@@ -45,7 +45,7 @@ namespace AV.Inspector
 			return skin != null && skin.name != "GameSkin";
 		}
 
-		private static void GetPatches()
+		static void GetPatches()
 		{
 			if (patches != null) 
 				return;
@@ -61,7 +61,7 @@ namespace AV.Inspector
 			}
 		}
 
-		private static void ApplyPatches(PatchBase.Apply apply)
+		static void ApplyPatches(PatchBase.Apply apply)
 		{
 			if (harmony == null)
 				harmony = new Harmony(HarmonyID);

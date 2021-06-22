@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using HarmonyLib;
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -20,68 +21,69 @@ namespace AV.Inspector
     // https://github.com/Unity-Technologies/UnityCsReference/blob/2020.2/Editor/Mono/Inspector/EditorDragging.cs
     internal class EditorElementPatch : PatchBase
     {
-        static readonly MethodInfo get_m_InspectorElement = AccessTools.PropertyGetter(EditorElementRef.type, "m_InspectorElement");
-    
-        static Action onPerformDrag;
-        static bool IsAnyDragging;
-        
-        static Vector2 mousePos;
-        static Vector2 holdMousePos;
-        
-
         protected override IEnumerable<Patch> GetPatches()
         {
             yield return new Patch(AccessTools.Method(EditorElementRef.type, "Init"), postfix: nameof(Init_));
             yield return new Patch(AccessTools.Method(EditorElementRef.type, "Reinit"), postfix: nameof(Reinit_));
-            yield return new Patch(AccessTools.Method(EditorElementRef.type, "UpdateInspectorVisibility"), prefix: nameof(_UpdateInspectorVisibility));
+            
+            yield return new Patch(AccessTools.Method(EditorElementRef.type, "UpdateInspectorVisibility"), nameof(_UpdateInspectorVisibility));
+            yield return new Patch(AccessTools.Method(EditorElementRef.type, "EditorNeedsVerticalOffset"), nameof(_EditorNeedsVerticalOffset));
         }
 
-
+        
         /// Skip default footer padding (for <see cref="EditorDraggingPatch"/>)
         static bool _UpdateInspectorVisibility(VisualElement __instance)
         {
             return false;
         }
         
+        static bool _EditorNeedsVerticalOffset(VisualElement __instance)
+        {
+            // https://github.com/Unity-Technologies/UnityCsReference/blob/2019.4/Editor/Mono/Inspector/EditorElement.cs#L356
+            return false;
+        }
+
+        
         static void Init_(VisualElement __instance, IMGUIContainer ___m_Header, IMGUIContainer ___m_Footer, EditorWindow ___inspectorWindow)
         {
             var smartInspector = SmartInspector.RebuildingInspector;
-
-            var data = CreateEditorElement(__instance, ___m_Header, ___m_Footer, ___inspectorWindow);
-            smartInspector.SetupEditorElement(data);
-        }
-        static void Reinit_(VisualElement __instance, IMGUIContainer ___m_Header, IMGUIContainer ___m_Footer, EditorWindow ___inspectorWindow)
-        {
-            var smartInspector = SmartInspector.RebuildingInspector;
             
-            var data = CreateEditorElement(__instance, ___m_Header, ___m_Footer, ___inspectorWindow);
+            var data = CreateEditorElement(__instance, ___m_Header, ___m_Footer, smartInspector);
             smartInspector.SetupEditorElement(data);
         }
         
-        static EditorElement CreateEditorElement(VisualElement element, VisualElement header, VisualElement footer, EditorWindow window)
+        static void Reinit_(VisualElement __instance, IMGUIContainer ___m_Header, IMGUIContainer ___m_Footer, EditorWindow ___inspectorWindow)
+        {
+            // TODO: Do proper re-init instead of full recreation 
+            Init_(__instance, ___m_Header, ___m_Footer, ___inspectorWindow);
+        }
+        
+        
+        static EditorElement CreateEditorElement(VisualElement element, VisualElement header, VisualElement footer, SmartInspector smartInspector)
         {
             var editor = EditorElementRef.GetEditor(element);
             var editorIndex = EditorElementRef.GetEditorIndex(element);
-            var inspector = (VisualElement)get_m_InspectorElement.Invoke(element, null);
-            var tracker = PropertyEditorRef.GetTracker(window);
+            var inspector = EditorElementRef.GetInspectorElement(element);
+            
+            var window = smartInspector.propertyEditor;
+            var tracker = smartInspector.tracker;
+            
             
             var data = new EditorElement(element)
             {
-                index = editorIndex,
                 header = header,
                 inspector = inspector,
                 footer = footer,
+                
+                index = editorIndex,
+                expandedState = -1,
+                
                 editor = editor,
                 window = window,
                 tracker = tracker,
+                
+                smartInspector = SmartInspector.RebuildingInspector,
             };
-
-            element.RegisterCallback<AttachToPanelEvent>(OnAttachToPanel);
-
-            void OnAttachToPanel(AttachToPanelEvent _)
-            {
-                data.list = element.parent;
-            }
 
             return data;
         }

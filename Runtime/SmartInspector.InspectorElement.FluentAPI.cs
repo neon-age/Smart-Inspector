@@ -27,6 +27,19 @@ namespace AV.Inspector.Runtime
                 x.Insert(index, element);
             }
 
+
+            public bool Has<T>() where T : VisualElement
+            {
+                return Get<T>() != null;
+            }
+            public bool Has<T>(string nameOrClass) where T : VisualElement
+            {
+                return Get<T>(nameOrClass) != null;
+            }
+            public bool Has(string nameOrClass)
+            {
+                return Get(nameOrClass) != null;
+            }
             
             public T Get<T>() where T : VisualElement
             {

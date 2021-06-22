@@ -10,6 +10,7 @@ namespace AV.Inspector.Runtime
             const float n = float.NaN;
             
             public void SetFlexDirection(FlexDirection direction) => x.style.flexDirection = direction;
+            public void SetFlexGrow(float flexGrow) => x.style.flexGrow = flexGrow;
             
             public void SetPosition(Position type, float top = n, float left = n, float right = n, float bottom = n) => x.style.SetPosition(type, top, left, right, bottom);
             public void SetPosition(float top = n, float left = n, float right = n, float bottom = n) => x.style.SetPosition(top, left, right, bottom);

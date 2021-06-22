@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -15,9 +16,10 @@ namespace AV.Inspector.Runtime
             {
                 return new VerticalGroup(reverse);
             }
-            public InspectorElement NewIndentedGroup(int left = 15, int right = 1, bool useMargin = false, FlexDirection direction = FlexDirection.Column)
+            public InspectorElement NewIndentedGroup(int left = 15, int right = 1, int top = 0, int bottom = 0,
+                bool useMargin = false, FlexDirection direction = FlexDirection.Column)
             {
-                return new IndentedGroup(left, right, useMargin, direction);
+                return new IndentedGroup(left, right, top, bottom, useMargin, direction);
             }
             
             
@@ -33,45 +35,52 @@ namespace AV.Inspector.Runtime
             
             public InspectorElement NewText(string text)
             {
-                return new Text(text);
+                return new Text(text).ForInspector();
             }
+            
             public InspectorElement NewIcon(Texture background)
             {
-                return new Image(background, 16).ForInspector().AddClass(IconClass);
+                return new Icon(background);
             }
+            
             public InspectorElement NewImage(Texture background, float maxSize = float.NaN)
             {
-                return new Image(background, maxSize);
+                return new Image(background, maxSize).ForInspector();
+            }
+            
+            
+            public InspectorElement NewToolbarButton(string text = default, Texture icon = default, 
+                EventCallback<MouseUpEvent> onUp = default, EventCallback<MouseDownEvent> onDown = default)
+            {
+                return SetupButton(new ToolbarButton(text, icon), onUp, onDown);
             }
             
             public InspectorElement NewButton(string text = default, Texture icon = default, 
-                EventCallback<MouseDownEvent> onDown = default, EventCallback<MouseUpEvent> onUp = default)
+                EventCallback<MouseUpEvent> onUp = default, EventCallback<MouseDownEvent> onDown = default)
             {
-                var button = new Button().ForInspector();
-                
-                var container = new VisualElement();
-                container.AddToClassList(ContentContainerClass);
-                
-                button.Add(container);
-            
-                if (icon != null)
+                return SetupButton(new Button(text, icon), onUp, onDown);
+            }
+
+            static Button SetupButton(Button button, EventCallback<MouseUpEvent> onUp = default, EventCallback<MouseDownEvent> onDown = default)
+            {
+                var isMouseOver = false;
+
+                if (onUp != null)
                 {
-                    var iconField = NewIcon(icon);
-                    container.Add(iconField);
+                    button.RegisterCallback<MouseEnterEvent>(evt => isMouseOver = true);
+                    button.RegisterCallback<MouseLeaveEvent>(evt => isMouseOver = false);
                 }
-            
-                if (text != null)
-                {
-                    var textField = new Text(text);
-                    container.Add(textField);
-                }
-            
+
                 if (onDown != null)
-                    button.Register(onDown);
+                    button.RegisterCallback<MouseDownEvent>(onDown);
                 
                 if (onUp != null)
-                    button.Register(onUp);
-            
+                    button.RegisterCallback<MouseUpEvent>(evt =>
+                    {
+                        if (isMouseOver)
+                            onUp.Invoke(evt);
+                    });
+                
                 return button;
             }
         }

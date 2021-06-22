@@ -16,6 +16,8 @@ namespace AV.Inspector
     {
         protected override IEnumerable<Patch> GetPatches()
         {
+            yield break;
+            /*
             var addressableGUIType = GetAddressableGUIType();
             if (addressableGUIType != null)
             {
@@ -33,7 +35,7 @@ namespace AV.Inspector
 
             yield return new Patch(onLabelGUI, nameof(_OnLabelGUI));
             yield return new Patch(onAssetBundleGUI, nameof(_OnAssetBundleNameGUI), apply: Apply.OnGUI);
-            yield return new Patch(drawPreviewAndLabels, nameof(DrawPreviewAndLabels_), apply: Apply.OnGUI);
+            yield return new Patch(drawPreviewAndLabels, nameof(DrawPreviewAndLabels_), apply: Apply.OnGUI);*/
         }
         
         static Type GetAddressableGUIType()

@@ -7,10 +7,11 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
 using EditorElement = AV.Inspector.Runtime.SmartInspector.EditorElement;
+using static AV.Inspector.Runtime.SmartInspector;
 
 namespace AV.Inspector
 {
-    internal class InspectorEditorTab : ToolbarToggle
+    internal class InspectorTab : ToolbarToggle
     {
         const string EditorTabClass = "editor-tab";
         const string TabStateKeyPrefix = "tab ";
@@ -30,12 +31,12 @@ namespace AV.Inspector
 
         Texture2D preview;
         Texture2D thumbnail;
-        VisualElement image;
+        VisualElement icon;
         
         Object target => editor.target;
         
         
-        public InspectorEditorTab(EditorElement editor)
+        public InspectorTab(EditorElement editor)
         {
             this.editor = editor;
             this.tracker = PropertyEditorRef.GetTracker(inspector.propertyEditor);
@@ -52,10 +53,10 @@ namespace AV.Inspector
             preview = AssetPreview.GetAssetPreview(target);
             thumbnail = AssetPreview.GetMiniThumbnail(target);
             
-            image = new VisualElement() { pickingMode = PickingMode.Ignore }.AddClass("small-icon");
-            Add(image);
+            icon = new Icon();
+            Add(icon);
             
-            this.Get(".unity-toggle__input").RemoveFromHierarchy();
+            this.Query(className: "unity-toggle__input").First().RemoveFromHierarchy();
         }
 
         void RegisterCallbacks()
@@ -141,7 +142,7 @@ namespace AV.Inspector
             if (!preview)
                 preview = AssetPreview.GetAssetPreview(target);
             
-            image.style.backgroundImage = preview ? preview : thumbnail;
+            icon.style.backgroundImage = preview ? preview : thumbnail;
         }
 
         string GetPrefKey()

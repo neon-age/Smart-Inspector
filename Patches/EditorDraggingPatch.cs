@@ -25,7 +25,7 @@ namespace AV.Inspector
         static readonly Type EditorDraggingType = EditorAssembly.GetType("UnityEditor.EditorDragging");
     
         static Action onPerformDrag;
-        static bool IsAnyDragging;
+        static bool isAnyDragging;
         
         static Vector2 mousePos;
         static Vector2 holdMousePos;
@@ -42,9 +42,8 @@ namespace AV.Inspector
             yield return new Patch(AccessTools.Method(EditorDraggingType, "GetTargetRect"), postfix: nameof(GetTargetRect_));
             yield return new Patch(AccessTools.Method(EditorDraggingType, "GetMarkerRect"), postfix: nameof(GetMarkerRect_));
             yield return new Patch(AccessTools.Method(EditorDraggingType, "HandleDragPerformEvent"), prefix: nameof(_HandleDragPerformEvent));
-            
-            yield return new Patch(AccessTools.Method(EditorElementRef.type, "UpdateInspectorVisibility"), prefix: nameof(_UpdateInspectorVisibility));
         }
+        
         
         static void OnSetupEditorElement(Runtime.SmartInspector.EditorElement x)
         {
@@ -64,7 +63,7 @@ namespace AV.Inspector
             footer.style.height = DragAreaHeight;
             footer.onGUIHandler += () =>
             {
-                if (!IsAnyDragging)
+                if (!isAnyDragging)
                     return;
                 
                 if (dragging)
@@ -102,15 +101,15 @@ namespace AV.Inspector
             void OnBeginDrag()
             {
             }
+            
             void OnPerformDrag()
             {
-                if (IsAnyDragging)
+                if (isAnyDragging)
                 {
-                    IsAnyDragging = false;
+                    isAnyDragging = false;
                 }
-                LeaveDrag();
                 
-                footer.pickingMode = PickingMode.Ignore;
+                LeaveDrag();
             }
             
             void EnterDrag()
@@ -120,9 +119,9 @@ namespace AV.Inspector
                 
                 dragging = true;
                 
-                if (!IsAnyDragging)
+                if (!isAnyDragging)
                 {
-                    IsAnyDragging = true;
+                    isAnyDragging = true;
                     OnBeginDrag();
                 }
 
@@ -137,6 +136,7 @@ namespace AV.Inspector
             {
                 dragging = false;
                 footer.visible = false;
+                footer.pickingMode = PickingMode.Ignore;
             }
         }
         
@@ -144,15 +144,9 @@ namespace AV.Inspector
         {
             onPerformDrag?.Invoke();
             onPerformDrag = null;
-            IsAnyDragging = false;
+            isAnyDragging = false;
         }
 
-        static bool _UpdateInspectorVisibility()
-        {
-            // Skip default footer padding
-            return false;
-        }
-        
         static bool IsComponentDragging()
         {
             var draggedObjects = DragAndDrop.objectReferences;
@@ -167,12 +161,12 @@ namespace AV.Inspector
             return false;
         }
 
+        
         static void GetTargetRect_(ref Rect __result)
         {
             __result.height = DragAreaHeight;
         }
-        
-        
+
         static void GetMarkerRect_(ref Rect __result
 #if !UNITY_2020_3_OR_NEWER
         , float markerY, bool targetAbove

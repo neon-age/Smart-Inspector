@@ -42,7 +42,7 @@ namespace AV.Inspector
         
         public TooltipElement()
         {
-            styleSheets.Add(UIResources.Asset.tooltipStyle);
+            styleSheets.Add(SmartInspector.tooltipStyles);
             style.opacity = 0;
 
             fitter.Add(text);
