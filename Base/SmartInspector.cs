@@ -225,7 +225,11 @@ namespace AV.Inspector
             // Footer is manipulated by EditorElementPatch.Init_
             
             editors.AddOrAssign(element, x);
-            Runtime.SmartInspector.OnSetupEditorElement?.Invoke(x);
+            try
+            {
+                Runtime.SmartInspector.OnSetupEditorElement?.Invoke(x);
+            }
+            catch (Exception ex) { Debug.LogException(ex); }
 
 
             void SetupSubData()
@@ -255,7 +259,7 @@ namespace AV.Inspector
             {
                 if (x.isComponent)
                 {
-                    x.header.SetFlexDirection(FlexDirection.RowReverse);
+                    x.header.FlexDirection(FlexDirection.RowReverse);
                     
                     // Temp solution for component header buttons padding
                     if (!x.header.Has<Space>("#rightSpace"))

@@ -10,6 +10,19 @@ namespace AV.Inspector.Runtime
         
         public class EditorSelection
         {
+            public void Set(params GameObject[] gameObjects)
+            {
+                SetGameObjects(gameObjects);
+            }
+            public void Set(params Component[] components)
+            {
+                SetGameObjects(components);
+            }
+            public void Set<T>(params T[] components) where T : Component
+            {
+                SetGameObjects(components);
+            }
+            
             public void SetGameObjects(params GameObject[] gameObjects)
             {
                 #if UNITY_EDITOR

@@ -59,7 +59,7 @@ namespace AV.Inspector
         }
         
         
-        static EditorElement CreateEditorElement(VisualElement element, VisualElement header, VisualElement footer, SmartInspector smartInspector)
+        static EditorElement CreateEditorElement(VisualElement element, IMGUIContainer header, IMGUIContainer footer, SmartInspector smartInspector)
         {
             var editor = EditorElementRef.GetEditor(element);
             var editorIndex = EditorElementRef.GetEditorIndex(element);
