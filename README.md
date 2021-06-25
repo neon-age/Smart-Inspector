@@ -44,16 +44,18 @@ From Unity **2019.4** up to **2021.2**!
 [![twitter](https://img.shields.io/twitter/follow/_neonage?style=social)](https://twitter.com/_neonage)\
 [![discord online](https://img.shields.io/discord/830405926078644254?label=Open%20Labs&logo=discord&style=social)](https://discord.gg/wWpqvwuf8J)
 
-All work-in-progress stuff is shared on Discord channel!
+👇 Cool work-in-progress stuff is shared on our channel!
 
 [![join discord](https://user-images.githubusercontent.com/29812914/121816656-0cb93080-cca7-11eb-954a-344cfd31f530.png)](https://discord.gg/wWpqvwuf8J)
 
 
 ## Consider Sponsoring! 💊
-Donate a fee of 7+$ and get a special Discord role, with a **personal bonus** ;)
+My work is **donation-driven**, which makes it open for anyone to use, in any project!
 
 [![paypal](https://user-images.githubusercontent.com/29812914/122331051-67c87d00-cf5e-11eb-8668-5c0640c613eb.png)](https://paypal.me/neonage)\
 [![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/neonage)
 [![patreon](https://user-images.githubusercontent.com/29812914/122331278-be35bb80-cf5e-11eb-8eb3-89540d70a9cd.png)](https://www.patreon.com/neonage)
 
-P.S. Prefer **Ko-Fi** for pledging, it takes **0% donation fee** and has no payout delay!
+For a pledge of 7~15$, you'll receive a special **Discord** role, with my personal **token of appreciation** 🤗
+
+> ☕ Prefer **Ko-Fi**, it takes **0% donation fee** and has no payout delay!
