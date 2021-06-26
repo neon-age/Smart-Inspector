@@ -1,0 +1,43 @@
+
+.hyperlink {
+    cursor: link;
+    
+    align-self: flex-start;
+    margin-left: 3;
+    
+    border-bottom-width: 1;
+    
+    color: #7cabf0;
+    border-bottom-color: #7cabf0;
+}
+
+.top-group {
+    margin-top: 3;
+}
+
+.links-bar {
+    padding-left: 6;
+    padding-bottom: 6;
+}
+
+.separator {
+    border-bottom-width: 2;
+    border-bottom-color: rgba(0, 0, 0, 0.25);
+}
+
+Foldout {
+    padding-top: 3;
+    padding-bottom: 3;
+}
+Foldout #unity-content {
+    margin-left: 15;
+}
+Foldout > Toggle Label {
+    -unity-font-style: bold;
+    
+    margin-left: 8;
+    margin-bottom: 1;
+}
+Foldout > Toggle #unity-checkmark {
+    display: none;
+}

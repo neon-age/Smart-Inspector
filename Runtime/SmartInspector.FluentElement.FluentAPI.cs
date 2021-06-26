@@ -8,63 +8,25 @@ namespace AV.Inspector.Runtime
     {
         public partial class FluentElement<T> where T : VisualElement
         {
-            public delegate void Event<in TEvent>(TEvent evt, FluentElement<T> e);
-
-            static class EventStorage<TEvent>
+            public FluentElement<T> Clear()
             {
-                public static Dictionary<Event<TEvent>, EventCallback<TEvent>> Registered = new Dictionary<Event<TEvent>, EventCallback<TEvent>>();
-            }
-            
-
-            public FluentElement<T> This(Action<FluentElement<T>> action)
-            {
-                action.Invoke(x);
+                x.Clear();
                 return x;
             }
             
-            
-            public FluentElement<T> Register<TEvent>(Event<TEvent> evt) where TEvent : EventBase<TEvent>, new()
-            {
-                if (EventStorage<TEvent>.Registered.ContainsKey(evt))
-                    return x;
-
-                var callback = (EventCallback<TEvent>)(call => evt(call, this));
-                
-                x.RegisterCallback(callback);
-                
-                EventStorage<TEvent>.Registered.Add(evt, callback);
-                
-                return x;
-            }
-            
-            public FluentElement<T> Register<TEvent>(EventCallback<TEvent> evt) where TEvent : EventBase<TEvent>, new()
-            {
-                x.RegisterCallback(evt);
-                return x;
-            }
-            
-            
-            public FluentElement<T> Unregister<TEvent>(Event<TEvent> evt) where TEvent : EventBase<TEvent>, new()
-            {
-                if (EventStorage<TEvent>.Registered.TryGetValue(evt, out var callback))
-                    x.UnregisterCallback(callback);
-                return x;
-            }
-            
-            public FluentElement<T> Unregister<TEvent>(EventCallback<TEvent> evt) where TEvent : EventBase<TEvent>, new()
-            {
-                x.UnregisterCallback(evt);
-                return x;
-            }
-            
-            
-            public FluentElement Add(VisualElement element)
+            public FluentElement<T> Add(VisualElement element)
             {
                 element.AddToClassList(UserElementClass);
                 x.Add(element);
                 return x;
             }
-            public FluentElement Insert(int index, VisualElement element)
+            public FluentElement<T> Add(params VisualElement[] elements)
+            {
+                foreach (var element in elements)
+                    Add(element);
+                return x;
+            }
+            public FluentElement<T> Insert(int index, VisualElement element)
             {
                 element.AddToClassList(UserElementClass);
                 x.Insert(index, element);
@@ -118,7 +80,7 @@ namespace AV.Inspector.Runtime
             }
             
             
-            public FluentElement Name(string name)
+            public FluentElement<T> Name(string name)
             {
                 x.name = NamePokaYoke(name);
                 return x;
@@ -129,21 +91,21 @@ namespace AV.Inspector.Runtime
             {
                 return x.ClassListContains(ClassPokaYoke(className));
             }
-            public FluentElement AddClass(params string[] classes)
+            public FluentElement<T> AddClass(params string[] classes)
             {
                 foreach (var className in classes)
                     x.AddToClassList(ClassPokaYoke(className));
                 
                 return x;
             }
-            public FluentElement RemoveClass(params string[] classes)
+            public FluentElement<T> RemoveClass(params string[] classes)
             {
                 foreach (var className in classes)
                     x.RemoveFromClassList(ClassPokaYoke(className));
                 
                 return x;
             }
-            public FluentElement EnableClass(string className, bool enable)
+            public FluentElement<T> EnableClass(string className, bool enable)
             {
                 x.EnableInClassList(ClassPokaYoke(className), enable);
                 return x;

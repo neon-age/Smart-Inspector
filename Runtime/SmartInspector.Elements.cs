@@ -14,23 +14,22 @@ namespace AV.Inspector.Runtime
             }
         }
         
-        public class Image : VisualElement, IUserElement
+        public class Icon : VisualElement, IUserElement
         {
-            public Image(Texture texture = default, float maxSize = float.NaN)
+            public Icon(Texture texture = default)
             {
-                AddToClassList(ImageClass);
+                AddToClassList(IconClass);
                 style.backgroundImage = texture as Texture2D;
-
+            }
+            
+            public Icon(Texture texture = default, float maxSize = 16) : this(texture)
+            {
                 if (!float.IsNaN(maxSize))
                 {
                     style.maxWidth = maxSize;
                     style.maxHeight = maxSize;
                 }
             }
-        }
-        public class Icon : Image, IUserElement
-        {
-            public Icon(Texture texture = default) : base(texture, 16) => AddToClassList(IconClass);
         }
 
         
@@ -47,11 +46,11 @@ namespace AV.Inspector.Runtime
                 
                 if (icon != null)
                 {
-                    var iconField = new Icon(icon);
+                    var iconField = new Icon(icon, 16);
                     Add(iconField);
                 }
             
-                if (text != null)
+                if (!string.IsNullOrEmpty(text))
                 {
                     var textField = new Text(text);
                     Add(textField);
@@ -64,12 +63,11 @@ namespace AV.Inspector.Runtime
             {
                 AddToClassList(ToolbarButtonClass);
                 AddToClassList("unity-toolbar-button");
-                //RemoveFromClassList("unity-button");
             }
         }
         
         
-        // We use this, users should use Group
+        // We use this for buttons content (Icon, Text), users should use Group
         internal class Content : VisualElement
         {
             public Content()
@@ -83,29 +81,8 @@ namespace AV.Inspector.Runtime
         {
             public Group(FlexDirection direction)
             {
-                pickingMode = PickingMode.Ignore;
+                //pickingMode = PickingMode.Ignore;
                 style.flexDirection = direction;
-            }
-        }
-        public class IndentedGroup : Group, IUserElement
-        {
-            public IndentedGroup(int left = 15, int right = 1, int top = 0, int bottom = 0, 
-                bool useMargin = false, FlexDirection direction = FlexDirection.Column) : base(direction)
-            {
-                if (useMargin)
-                {
-                    style.marginLeft = left;
-                    style.marginRight = right;
-                    style.marginTop = top;
-                    style.marginBottom = bottom;
-                }
-                else
-                {
-                    style.paddingLeft = left;
-                    style.paddingRight = right;
-                    style.paddingTop = top;
-                    style.paddingBottom = bottom;
-                }
             }
         }
         public class HorizontalGroup : Group, IUserElement

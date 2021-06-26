@@ -1,18 +1,22 @@
-using System;
+
 using UnityEngine;
 using UnityEngine.UIElements;
-
 
 namespace AV.Inspector.Runtime
 {
     public static partial class SmartInspector
     {
-        public partial class EditorElement : FluentElement
+        public partial class FluentElement<T>
         {
             public FluentElement NewElement()
             {
                 return new VisualElement();
             }
+            public FluentElement<TElement> New<TElement>() where TElement : VisualElement, new()
+            {
+                return new TElement();
+            }
+            
             
             public FluentElement<HorizontalGroup> NewHorizontalGroup(bool reverse = false)
             {
@@ -22,10 +26,17 @@ namespace AV.Inspector.Runtime
             {
                 return new VerticalGroup(reverse);
             }
-            public FluentElement<IndentedGroup> NewIndentedGroup(int left = 15, int right = 1, int top = 0, int bottom = 0,
+            public FluentElement<Group> NewIndentedGroup(int left = 15, int right = 1, int top = 0, int bottom = 0,
                 bool useMargin = false, FlexDirection direction = UnityEngine.UIElements.FlexDirection.Column)
             {
-                return new IndentedGroup(left, right, top, bottom, useMargin, direction);
+                var group = new Group(direction).Fluent();
+                
+                if (useMargin)
+                    group.Margin(top, left, right, bottom);
+                else
+                    group.Padding(top, left, right, bottom);
+                
+                return group;
             }
             
             
@@ -44,14 +55,9 @@ namespace AV.Inspector.Runtime
                 return new Text(text);
             }
             
-            public FluentElement<Icon> NewIcon(Texture background)
+            public FluentElement<Icon> NewIcon(Texture background, float maxSize = 16)
             {
-                return new Icon(background);
-            }
-            
-            public FluentElement<Image> NewImage(Texture background, float maxSize = float.NaN)
-            {
-                return new Image(background, maxSize);
+                return new Icon(background, maxSize);
             }
             
             
@@ -70,18 +76,18 @@ namespace AV.Inspector.Runtime
                 SetupClickEvents(button, onUp, onDown);
                 return button;
             }
-
+            
             
             static void SetupClickEvents(VisualElement x, EventCallback<MouseUpEvent> onUp = default, EventCallback<MouseDownEvent> onDown = default)
             {
                 var isMouseOver = false;
-
+            
                 if (onUp != null)
                 {
                     x.RegisterCallback<MouseEnterEvent>(evt => isMouseOver = true);
                     x.RegisterCallback<MouseLeaveEvent>(evt => isMouseOver = false);
                 }
-
+            
                 if (onDown != null)
                     x.RegisterCallback<MouseDownEvent>(onDown);
                 

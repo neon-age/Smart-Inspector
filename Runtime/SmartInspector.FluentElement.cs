@@ -21,7 +21,7 @@ namespace AV.Inspector.Runtime
             public IVisualElementScheduler schedule => x.schedule;
             public VisualElementStyleSheetSet styleSheets => x.styleSheets;
             
-          
+            
             public FluentElement(T element) => x = element;
 
             public static implicit operator FluentElement<T>(T x) => new FluentElement<T>(x);

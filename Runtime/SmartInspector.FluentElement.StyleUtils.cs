@@ -9,6 +9,18 @@ namespace AV.Inspector.Runtime
         {
             const float n = float.NaN;
 
+            public DisplayStyle Display() => x.resolvedStyle.display;
+            public FluentElement<T> Display(bool flex)
+            {
+                x.style.display = flex ? DisplayStyle.Flex : DisplayStyle.None; return x;
+            }
+            
+            public Visibility Visible() => x.resolvedStyle.visibility;
+            public FluentElement<T> Visible(bool visible)
+            {
+                x.style.visibility = visible ? Visibility.Visible : Visibility.Hidden; return x;
+            }
+
             
             public FlexDirection FlexDirection() => x.resolvedStyle.flexDirection;
             public FluentElement<T> FlexDirection(FlexDirection direction)
@@ -30,8 +42,7 @@ namespace AV.Inspector.Runtime
             }
             public FluentElement<T> TopLeft(float top, float left)
             {
-                x.style.SetPosition(top: top, left: top);
-                return x;
+                x.style.SetPosition(top: top, left: top); return x;
             }
             
             public FluentElement<T> StretchToParent()
@@ -52,55 +63,6 @@ namespace AV.Inspector.Runtime
             {
                 x.style.SetPosition(top, left, right, bottom); return x;
             }
-
-
-            public Align AlignSelf() => x.resolvedStyle.alignContent;
-            public FluentElement<T> AlignSelf(Align align) { x.style.alignSelf = align; return x; }
-            
-            public Align AlignItems() => x.resolvedStyle.alignItems;
-            public FluentElement<T> AlignItems(Align align) { x.style.alignItems = align; return x; }
-
-            public Align AlignContent() => x.resolvedStyle.alignContent;
-            public FluentElement<T> AlignContent(Align align) { x.style.alignContent = align; return x; }
-
-
-            
-            public Vector2 Size()
-            {
-                var r = x.resolvedStyle;
-                return new Vector2(r.width, r.height);
-            }
-            public FluentElement<T> Size(float width = n, float height = n)
-            {
-                x.style.SetSize(width, height); return x;
-            }
-            
-            
-            public Vector2 MinSize()
-            {
-                var r = x.resolvedStyle;
-                return new Vector2(r.maxWidth.value, r.maxHeight.value);
-            }
-            public FluentElement<T> MinSize(float minWidth = n, float minHeight = n)
-            {
-                x.style.minWidth = minWidth;
-                x.style.minHeight = minHeight;
-                return x;
-            }
-            
-            
-            public Vector2 MaxSize()
-            {
-                var r = x.resolvedStyle;
-                return new Vector2(r.maxWidth.value, r.maxHeight.value);
-            }
-            public FluentElement<T> MaxSize(float maxWidth = n, float maxHeight = n)
-            {
-                x.style.maxWidth = maxWidth;
-                x.style.maxHeight = maxHeight;
-                return x;
-            }
-
             
             public Sides Margin()
             {
@@ -116,7 +78,11 @@ namespace AV.Inspector.Runtime
                 x.style.SetMargin(top, left, right, bottom); return x;
             }
 
-            
+            public Sides Padding()
+            {
+                var r = x.resolvedStyle;
+                return new Sides(r.paddingTop, r.paddingLeft, r.paddingRight, r.paddingBottom);
+            }
             public FluentElement<T> Padding(float padding)
             {
                 x.style.SetPadding(padding); return x;
@@ -125,8 +91,67 @@ namespace AV.Inspector.Runtime
             {
                 x.style.SetPadding(top, left, right, bottom); return x;
             }
+            
+            public FluentElement<T> Slice(int? top = default, int? left = default, int? right = default, int? bottom = default)
+            {
+                x.style.SetSlice(top, left, right, bottom); return x;
+            }
+
+
+
+            public Align AlignSelf() => x.resolvedStyle.alignContent;
+            public FluentElement<T> AlignSelf(Align align) { x.style.alignSelf = align; return x; }
+            
+            public Align AlignItems() => x.resolvedStyle.alignItems;
+            public FluentElement<T> AlignItems(Align align) { x.style.alignItems = align; return x; }
+
+            public Align AlignContent() => x.resolvedStyle.alignContent;
+            public FluentElement<T> AlignContent(Align align) { x.style.alignContent = align; return x; }
+            
+            public Justify JustifyContent() => x.resolvedStyle.justifyContent;
+            public FluentElement<T> JustifyContent(Justify justify) { x.style.justifyContent = justify; return x; }
 
             
+            public Vector2 Size()
+            {
+                var r = x.resolvedStyle;
+                return new Vector2(r.width, r.height);
+            }
+            public FluentElement<T> Size(float width = n, float height = n)
+            {
+                x.style.SetSize(width, height); return x;
+            }
+
+            public Vector2 MinSize()
+            {
+                var r = x.resolvedStyle;
+                return new Vector2(r.maxWidth.value, r.maxHeight.value);
+            }
+            public FluentElement<T> MinSize(float minWidth = n, float minHeight = n)
+            {
+                x.style.minWidth = minWidth;
+                x.style.minHeight = minHeight;
+                return x;
+            }
+
+            public Vector2 MaxSize()
+            {
+                var r = x.resolvedStyle;
+                return new Vector2(r.maxWidth.value, r.maxHeight.value);
+            }
+            public FluentElement<T> MaxSize(float maxWidth = n, float maxHeight = n)
+            {
+                x.style.maxWidth = maxWidth;
+                x.style.maxHeight = maxHeight;
+                return x;
+            }
+
+            
+            public float Opacity() => x.resolvedStyle.opacity;
+            public FluentElement<T> Opacity(float opacity)
+            {
+                x.style.opacity = opacity; return x;
+            }
             
             public Color Color() => x.resolvedStyle.backgroundColor;
             public FluentElement<T> Color(Color color)
@@ -140,13 +165,49 @@ namespace AV.Inspector.Runtime
                 x.style.color = color; return x;
             }
             
-            public Color ImageColor() => x.resolvedStyle.unityBackgroundImageTintColor;
+            public Color ImageTint() => x.resolvedStyle.unityBackgroundImageTintColor;
             public FluentElement<T> ImageTint(Color color)
             {
                 x.style.unityBackgroundImageTintColor = color; return x;
             }
             
             
+            public float FontSize() => x.resolvedStyle.fontSize;
+            public FluentElement<T> FontSize(float size)
+            {
+                x.style.fontSize = size; return x;
+            }
+            
+            public Font Font() => x.resolvedStyle.unityFont;
+            public FluentElement<T> Font(Font font)
+            {
+                x.style.unityFont = font; return x;
+            }
+            
+            public FontStyle FontStyle() => x.resolvedStyle.unityFontStyleAndWeight;
+            public FluentElement<T> FontStyle(FontStyle style)
+            {
+                x.style.unityFontStyleAndWeight = style; return x;
+            }
+
+
+            public TextAnchor TextAlign() => x.resolvedStyle.unityTextAlign;
+            public FluentElement<T> TextAlign(TextAnchor align)
+            {
+                x.style.unityTextAlign = align; return x;
+            }
+
+            public TextOverflow TextOverflow() => x.resolvedStyle.textOverflow;
+            public FluentElement<T> TextOverflow(TextOverflow overflow)
+            {
+                x.style.textOverflow = overflow; return x;
+            }
+            public FluentElement<T> Overflow(Overflow overflow)
+            {
+                x.style.overflow = overflow; return x;
+            }
+
+
             public SidesColor BorderColor()
             {
                 var r = x.resolvedStyle;

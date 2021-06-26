@@ -32,7 +32,7 @@ namespace AV.Inspector
         Texture2D preview;
         Texture2D thumbnail;
         VisualElement icon;
-        
+
         Object target => editor.target;
         
         
@@ -53,7 +53,7 @@ namespace AV.Inspector
             preview = AssetPreview.GetAssetPreview(target);
             thumbnail = AssetPreview.GetMiniThumbnail(target);
             
-            icon = new Icon();
+            icon = new Icon(maxSize: 16);
             Add(icon);
             
             this.Query(className: "unity-toggle__input").First().RemoveFromHierarchy();

@@ -230,7 +230,7 @@ namespace AV.Inspector
                 Runtime.SmartInspector.OnSetupEditorElement?.Invoke(x);
             }
             catch (Exception ex) { Debug.LogException(ex); }
-
+            
 
             void SetupSubData()
             {

@@ -81,6 +81,15 @@ namespace AV.Inspector
         }
         
         
+        public static void SetSlice(this IStyle style, int? top = null, int? left = null, int? right = null, int? bottom = null)
+        {
+            if (top.HasValue) style.unitySliceTop = top.Value;
+            if (left.HasValue) style.unitySliceLeft = left.Value;
+            if (right.HasValue) style.unitySliceRight = right.Value;
+            if (bottom.HasValue) style.unitySliceBottom = bottom.Value;
+        }
+        
+        
         public static void SetPosition(this IStyle style, Position type, float top = n, float left = n, float right = n, float bottom = n)
         {
             style.position = type;

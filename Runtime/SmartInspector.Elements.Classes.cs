@@ -9,7 +9,6 @@ namespace AV.Inspector.Runtime
         
         const string ToolbarButtonClass = "toolbar-button";
         const string ButtonClass = "button";
-        const string ImageClass = "image";
         const string IconClass = "icon";
         const string TextClass = "text";
     }
