@@ -19,9 +19,9 @@ namespace AV.Inspector
         public bool enablePlugin = true;
         public bool showTabsBar = true;
         
-        public Headers headers;
-        public Enhancements enhancements;
-        public AdditionalButtons additionalButtons;
+        public Headers headers = new Headers();
+        public Enhancements enhancements = new Enhancements();
+        public AdditionalButtons additionalButtons = new AdditionalButtons();
         
 
         [Serializable]
