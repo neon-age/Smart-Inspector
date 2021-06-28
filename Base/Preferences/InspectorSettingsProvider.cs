@@ -1,6 +1,7 @@
 
 using AV.Inspector.Runtime;
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -20,9 +21,8 @@ namespace AV.Inspector
         public override void OnActivate(string searchContext, VisualElement root)
         {
             var prefs = InspectorPrefs.LoadFromRegistry();
-            var serializedObject = new SerializedObject(prefs);
 
-            var ui = new InspectorPrefsUI(serializedObject).Fluent();
+            var ui = new InspectorPrefsUI(prefs).Fluent();
             
             var scrollView = new ScrollView();
             scrollView.Add(ui);
@@ -30,7 +30,24 @@ namespace AV.Inspector
             root.Add(CreateBigTitle());
             root.Add(scrollView);
 
-            ui.Register<ChangeEvent<bool>>(_ => prefs.SaveToRegistry());
+            var wasJustActivated = true;
+            EditorApplication.delayCall += () => wasJustActivated = false;
+            
+            ui.Register<ChangeEvent<bool>>(SaveAndRebuildInspectors);
+            
+            void SaveAndRebuildInspectors<TValue>(ChangeEvent<TValue> evt)
+            {
+                // ChangeEvent is called when PropertyFields are just being created, we must avoid that
+                if (wasJustActivated)
+                    return;
+                /*
+                var x = evt.target.Fluent();
+                if (!x.parent.HasClass(InspectorPrefsUI.RequiresRebuildClass))
+                    return;*/
+                
+                prefs.SaveToRegistry();
+                PropertyEditorRef.RebuildAllInspectors();
+            }
         }
 
         Label CreateBigTitle()

@@ -7,11 +7,17 @@
     margin-right: 0;
 }
 
+Scroller {
+    border-width: 0;
+}
+
 .unity-scroller--vertical {
     width: 6;
     right: 7;
 }
 .unity-scroller #unity-dragger {
+    margin-left: 1;
+    border-radius: 5;
     width: 10;
 }
 .unity-scroller:disabled {

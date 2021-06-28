@@ -1,23 +1,29 @@
 
 .hyperlink {
     cursor: link;
+    overflow: hidden;
     
-    align-self: flex-start;
+    flex-grow: 0;
+    flex-shrink: 1;
+    align-self: center;
+    
     margin-left: 3;
-    
+    margin-right: 3;
+    padding-right: 0;
     border-bottom-width: 1;
     
     color: #7cabf0;
     border-bottom-color: #7cabf0;
 }
 
+.top-bar {
+    align-items: center;
+    padding-left: 6;
+    padding-right: 3;
+    padding-bottom: 6;
+}
 .top-group {
     margin-top: 3;
-}
-
-.links-bar {
-    padding-left: 6;
-    padding-bottom: 6;
 }
 
 .separator {
@@ -39,5 +45,5 @@ Foldout > Toggle Label {
     margin-bottom: 1;
 }
 Foldout > Toggle #unity-checkmark {
-    display: none;
+    opacity: 0;
 }

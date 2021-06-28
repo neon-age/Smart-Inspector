@@ -34,6 +34,12 @@ namespace AV.Inspector.Runtime
                 x.style.flexGrow = flexGrow; return x;
             }
             
+            public float FlexShrink() => x.resolvedStyle.flexShrink;
+            public FluentElement<T> FlexShrink(float flexShrink)
+            {
+                x.style.flexShrink = flexShrink; return x;
+            }
+            
 
             public SidesTopLeft TopLeft()
             {

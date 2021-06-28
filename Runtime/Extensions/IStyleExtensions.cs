@@ -11,14 +11,14 @@ namespace AV.Inspector
         static bool Nan(float value) => float.IsNaN(value);
 
 
-        public static void SetSize(this IStyle style, float width = n, float height = n)
+        internal static void SetSize(this IStyle style, float width = n, float height = n)
         {
             if (!Nan(width)) style.width = width;
             if (!Nan(height)) style.height = height;
         }
         
         
-        public static void SetBorderColor(this IStyle style, Color color)
+        internal static void SetBorderColor(this IStyle style, Color color)
         {
             style.borderTopColor = color;
             style.borderLeftColor = color;
@@ -26,12 +26,12 @@ namespace AV.Inspector
             style.borderBottomColor = color;
         }
 
-        public static void SetBorderWidth(this IStyle style, float width)
+        internal static void SetBorderWidth(this IStyle style, float width)
         {
             SetBorderWidth(style, width, width, width, width);
         }
 
-        public static void SetBorderWidth(this IStyle style, float top = n, float left = n, float right = n, float bottom = n)
+        internal static void SetBorderWidth(this IStyle style, float top = n, float left = n, float right = n, float bottom = n)
         {
             if (!Nan(top)) style.borderTopWidth = top;
             if (!Nan(left)) style.borderLeftWidth = left;
@@ -39,12 +39,12 @@ namespace AV.Inspector
             if (!Nan(bottom)) style.borderBottomWidth = bottom;
         }
 
-        public static void SetBorderRadius(this IStyle style, float radius)
+        internal static void SetBorderRadius(this IStyle style, float radius)
         {
             SetBorderRadius(style, radius, radius, radius, radius);
         }
 
-        public static void SetBorderRadius(this IStyle style, float top = n, float left = n, float right = n, float bottom = n)
+        internal static void SetBorderRadius(this IStyle style, float top = n, float left = n, float right = n, float bottom = n)
         {
             if (!Nan(top)) style.borderTopLeftRadius = top;
             if (!Nan(left)) style.borderTopRightRadius = left;
@@ -53,12 +53,12 @@ namespace AV.Inspector
         }
 
         
-        public static void SetMargin(this IStyle style, float length)
+        internal static void SetMargin(this IStyle style, float length)
         {
             SetMargin(style, length, length, length, length);
         }
         
-        public static void SetMargin(this IStyle style, float top = n, float left = n, float right = n, float bottom = n)
+        internal static void SetMargin(this IStyle style, float top = n, float left = n, float right = n, float bottom = n)
         {
             if (!Nan(top)) style.marginTop = top;
             if (!Nan(left)) style.marginLeft = left;
@@ -67,12 +67,12 @@ namespace AV.Inspector
         }
 
         
-        public static void SetPadding(this IStyle style, float length)
+        internal static void SetPadding(this IStyle style, float length)
         {
             SetPadding(style, length, length, length, length);
         }
 
-        public static void SetPadding(this IStyle style, float top = n, float left = n, float right = n, float bottom = n)
+        internal static void SetPadding(this IStyle style, float top = n, float left = n, float right = n, float bottom = n)
         {
             if (!Nan(top)) style.paddingTop = top;
             if (!Nan(left)) style.paddingLeft = left;
@@ -81,7 +81,7 @@ namespace AV.Inspector
         }
         
         
-        public static void SetSlice(this IStyle style, int? top = null, int? left = null, int? right = null, int? bottom = null)
+        internal static void SetSlice(this IStyle style, int? top = null, int? left = null, int? right = null, int? bottom = null)
         {
             if (top.HasValue) style.unitySliceTop = top.Value;
             if (left.HasValue) style.unitySliceLeft = left.Value;
@@ -90,12 +90,12 @@ namespace AV.Inspector
         }
         
         
-        public static void SetPosition(this IStyle style, Position type, float top = n, float left = n, float right = n, float bottom = n)
+        internal static void SetPosition(this IStyle style, Position type, float top = n, float left = n, float right = n, float bottom = n)
         {
             style.position = type;
             SetPosition(style, top, left, right, bottom);
         }
-        public static void SetPosition(this IStyle style, float top = n, float left = n, float right = n, float bottom = n)
+        internal static void SetPosition(this IStyle style, float top = n, float left = n, float right = n, float bottom = n)
         {
             if (!Nan(top)) style.top = top;
             if (!Nan(left)) style.left = left;

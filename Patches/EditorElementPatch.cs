@@ -59,7 +59,7 @@ namespace AV.Inspector
         }
         
         
-        static EditorElement CreateEditorElement(VisualElement element, IMGUIContainer header, IMGUIContainer footer, SmartInspector smartInspector)
+        internal static EditorElement CreateEditorElement(VisualElement element, IMGUIContainer header, IMGUIContainer footer, SmartInspector smartInspector)
         {
             var editor = EditorElementRef.GetEditor(element);
             var editorIndex = EditorElementRef.GetEditorIndex(element);
@@ -82,7 +82,7 @@ namespace AV.Inspector
                 window = window,
                 tracker = tracker,
                 
-                smartInspector = SmartInspector.RebuildingInspector,
+                smartInspector = smartInspector,
             };
 
             return data;

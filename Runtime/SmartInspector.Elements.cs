@@ -79,6 +79,7 @@ namespace AV.Inspector.Runtime
         
         public class Group : VisualElement, IUserElement
         {
+            public Group() {}
             public Group(FlexDirection direction)
             {
                 //pickingMode = PickingMode.Ignore;

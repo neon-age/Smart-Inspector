@@ -16,7 +16,12 @@ namespace AV.Inspector.Runtime
             {
                 return new TElement();
             }
-            
+
+
+            public FluentElement<Foldout> NewFoldout(string text)
+            {
+                return new Foldout { text = text };
+            }
             
             public FluentElement<HorizontalGroup> NewHorizontalGroup(bool reverse = false)
             {
@@ -25,6 +30,10 @@ namespace AV.Inspector.Runtime
             public FluentElement<VerticalGroup> NewVerticalGroup(bool reverse = false)
             {
                 return new VerticalGroup(reverse);
+            }
+            public FluentElement<Group> NewGroup()
+            {
+                return new Group();
             }
             public FluentElement<Group> NewIndentedGroup(int left = 15, int right = 1, int top = 0, int bottom = 0,
                 bool useMargin = false, FlexDirection direction = UnityEngine.UIElements.FlexDirection.Column)

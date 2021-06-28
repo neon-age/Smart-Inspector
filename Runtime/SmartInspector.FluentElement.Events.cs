@@ -1,6 +1,7 @@
 
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace AV.Inspector.Runtime
@@ -53,18 +54,41 @@ namespace AV.Inspector.Runtime
                 return x;
             }
             
-            public FluentElement<T> RegisterOneShot<TEvent>(EventCallback<TEvent> callback) where TEvent : EventBase<TEvent>, new()
+            public FluentElement<T> RegisterUntil<TEvent>(EventCallback<TEvent> callback, Func<bool> unregisterWhen) where TEvent : EventBase<TEvent>, new()
             {
                 EventCallback<TEvent> handler = null;
-                
-                handler = evt => 
+
+                handler = evt =>
                 {
-                    callback.Invoke(evt);
-                    x.UnregisterCallback(handler);
+                    try
+                    {
+                        callback.Invoke(evt);
+                    }
+                    catch (Exception ex) { Debug.LogException(ex); }
+
+                    var unregisterNow = false;
+
+                    try
+                    {
+                        unregisterNow = unregisterWhen.Invoke();
+                    }
+                    catch (Exception ex) { Debug.LogException(ex); }
+                    
+                    if (unregisterNow)
+                        x.UnregisterCallback(handler);
                 };
                 
                 x.RegisterCallback(handler);
                 return x;
+            }
+            public FluentElement<T> RegisterFewShots<TEvent>(EventCallback<TEvent> callback, int shots) where TEvent : EventBase<TEvent>, new()
+            {
+                var i = 0;
+                return RegisterUntil(callback, () => i++ >= shots);
+            }
+            public FluentElement<T> RegisterOneShot<TEvent>(EventCallback<TEvent> callback) where TEvent : EventBase<TEvent>, new()
+            {
+                return RegisterFewShots(callback, 1);
             }
             
             public FluentElement<T> Register<TEvent>(EventCallback<TEvent> callback) where TEvent : EventBase<TEvent>, new()

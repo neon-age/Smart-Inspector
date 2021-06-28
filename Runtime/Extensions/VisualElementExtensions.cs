@@ -9,5 +9,10 @@ namespace AV.Inspector.Runtime
         {
             return x;
         }
+        
+        public static SmartInspector.FluentElement<VisualElement> Fluent(this IEventHandler x)
+        {
+            return x as VisualElement;
+        }
     }
 }

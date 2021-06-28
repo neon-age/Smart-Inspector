@@ -18,6 +18,7 @@ namespace AV.Inspector
     internal partial class SmartInspector
     {
         const int ComponentPaddingBottom = 5;
+        const int ScrollbarFadeMS = 50;
         
         static readonly TypeCache.MethodCollection InitOnInspectorMethods = TypeCache.GetMethodsWithAttribute<InitializeOnInspectorAttribute>();
 
@@ -40,8 +41,11 @@ namespace AV.Inspector
             public SmartInspector smartInspector;
             public EditorElement element;
         }
+        
+        static InspectorPrefs prefs => InspectorPrefs.Loaded;
+        static bool showTabsBar => prefs.enablePlugin && prefs.showTabsBar;
+        static bool useCompactScrollbar => prefs.enablePlugin && prefs.enhancements.compactScrollbar;
 
-        internal static SmartInspector LastActive;
         internal static SmartInspector RebuildingInspector;
         internal static Dictionary<EditorWindow, SmartInspector> Injected = new Dictionary<EditorWindow, SmartInspector>();
 
@@ -51,6 +55,7 @@ namespace AV.Inspector
         
         VisualElement root;
         VisualElement mainContainer;
+        VisualElement scrollbar;
         VisualElement contentViewport;
         VisualElement editorsList;
         VisualElement gameObjectEditor;
@@ -73,7 +78,14 @@ namespace AV.Inspector
 
         internal void OnEnable() {}
         internal void OnDisable() {}
-        
+
+        internal static void ForEach(Action<SmartInspector> action)
+        {
+            foreach (var inspector in Injected.Values)
+            {
+                try { action(inspector); } catch(Exception ex) { Debug.LogException(ex); }
+            }
+        }
         
         internal void Inject()
         {
@@ -83,8 +95,6 @@ namespace AV.Inspector
         
         InjectResult TryInject()
         {
-            LastActive = this;
-            
             this.root = propertyEditor.rootVisualElement;
             this.mainContainer = root.Query(className: "unity-inspector-main-container").First();
             this.editorsList = root.Query(className: "unity-inspector-editors-list").First();
@@ -92,12 +102,17 @@ namespace AV.Inspector
             if (editorsList == null)
                 return InjectResult.NoList;
 
-            Init();
-
             var scrollView = root.Query(className: "unity-inspector-root-scrollview").First();
             
+            scrollbar = scrollView.Query(className: "unity-scroller--vertical");
             contentViewport = scrollView.Query(name: "unity-content-viewport");
+            
+            scrollbar.AddToClassList("root-scroll");
+            
+            root.RegisterCallback<MouseMoveEvent>(OnRootMouseMove);
             contentViewport.RegisterCallback<GeometryChangedEvent>(OnContentViewportLayout);
+            
+            Init();
 
             if (gameObjectEditor == null)
                 return InjectResult.NoGameObjectEditor;
@@ -109,8 +124,7 @@ namespace AV.Inspector
             
             // Insert after InspectorElement and before Footer
             gameObjectEditor.Insert(2, toolbar);
-            
-            
+
             return InjectResult.Final;
         }
         
@@ -130,14 +144,39 @@ namespace AV.Inspector
             if (!EditorGUIUtility.isProSkin)
                 root.styleSheets.Add(coreStylesLight);
             
-            root.styleSheets.Add(scrollViewStyles);
             editorsList.styleSheets.Add(headerStyles);
+            
+            ScrollbarRedraw(Vector2.zero);
         }
 
+        void OnRootMouseMove(MouseMoveEvent evt)
+        {
+            ScrollbarRedraw(evt.mousePosition);
+        }
         void OnContentViewportLayout(GeometryChangedEvent evt)
         {
-            // Hides scrollbar indentation
-            contentViewport.style.marginRight = 0;
+            if (useCompactScrollbar)
+                contentViewport.style.marginRight = 0;
+        }
+        
+        void ScrollbarRedraw(Vector2 mousePos)
+        {
+            if (!useCompactScrollbar)
+            {
+                scrollbar.style.opacity = 1;
+                scrollbar.style.width = 13;
+                return;
+            }
+
+            var layout = root.layout;
+            
+            var max = layout.xMax;
+            var min = max - 150;
+
+            var lerp = (mousePos.x - min) / (max - min);
+            
+            scrollbar.style.opacity = Mathf.Lerp(0, 1, lerp);
+            scrollbar.style.width = 5;
         }
 
         
@@ -163,6 +202,18 @@ namespace AV.Inspector
             RebuildingInspector = this;
             FirstInitOnInspectorIfNeeded();
 
+            if (root == null)
+                return;
+
+            toolbar?.Fluent().Display(showTabsBar);
+
+            if (useCompactScrollbar)
+                root.styleSheets.Add(scrollViewStyles);
+            else
+                root.styleSheets.Remove(scrollViewStyles);
+
+            OnContentViewportLayout(null);
+            
             //Debug.Log(stage);
             
             if (stage == RebuildStage.BeforeEditorElements)
@@ -224,7 +275,9 @@ namespace AV.Inspector
             SetupInspectorElement();
             // Footer is manipulated by EditorElementPatch.Init_
             
-            editors.AddOrAssign(element, x);
+            if (!editors.ContainsKey(element))
+                editors.Add(element, x);
+            
             try
             {
                 Runtime.SmartInspector.OnSetupEditorElement?.Invoke(x);

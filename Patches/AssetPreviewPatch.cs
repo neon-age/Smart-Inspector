@@ -12,20 +12,15 @@ using Debug = UnityEngine.Debug;
 
 namespace AV.Inspector
 {
-    internal class InspectorAssetPreviewPatch : PatchBase
+    internal class AssetPreviewPatch : PatchBase
     {
+        static InspectorPrefs prefs => InspectorPrefs.Loaded;
+        static bool showLabel => !prefs.enablePlugin || prefs.additionalButtons.assetLabels;
+        static bool showBundle => !prefs.enablePlugin || prefs.additionalButtons.assetBundle;
+        
+        
         protected override IEnumerable<Patch> GetPatches()
         {
-            yield break;
-            /*
-            var addressableGUIType = GetAddressableGUIType();
-            if (addressableGUIType != null)
-            {
-                var onPostHeaderGUI = AccessTools.Method(addressableGUIType, "OnPostHeaderGUI");
-
-                yield return new Patch(onPostHeaderGUI, nameof(OnPostHeaderGUI));
-            }
-        
             var labelGUIType = EditorAssembly.GetType("UnityEditor.LabelGUI");
             var assetBundleGUIType = EditorAssembly.GetType("UnityEditor.AssetBundleNameGUI");
 
@@ -35,29 +30,17 @@ namespace AV.Inspector
 
             yield return new Patch(onLabelGUI, nameof(_OnLabelGUI));
             yield return new Patch(onAssetBundleGUI, nameof(_OnAssetBundleNameGUI), apply: Apply.OnGUI);
-            yield return new Patch(drawPreviewAndLabels, nameof(DrawPreviewAndLabels_), apply: Apply.OnGUI);*/
-        }
-        
-        static Type GetAddressableGUIType()
-        {
-            return TypeCache
-                .GetTypesWithAttribute<InitializeOnLoadAttribute>()
-                .FirstOrDefault(type => type.Name == "AddressableAssetInspectorGUI");
-        }
-        
-        static bool OnPostHeaderGUI()
-        {
-            return false;
+            yield return new Patch(drawPreviewAndLabels, nameof(DrawPreviewAndLabels_), apply: Apply.OnGUI);
         }
 
         static bool _OnLabelGUI()
         {
-            return false;
+            return showLabel;
         }
 
         static bool _OnAssetBundleNameGUI()
         {
-            return false;
+            return showBundle;
         }
         
         static void DrawPreviewAndLabels_(EditorWindow __instance, bool ___m_HasPreview, bool ___m_PreviousPreviewExpandedState)
@@ -65,13 +48,30 @@ namespace AV.Inspector
             var footerInfo = __instance.rootVisualElement.Query(className: "unity-inspector-footer-info").First();
             if (footerInfo == null)
                 return;
+            
+            footerInfo.style.marginBottom = 0;
+            footerInfo.visible = true;
 
-            footerInfo.visible = ___m_HasPreview;
+            if (!prefs.enablePlugin) 
+                return;
+            
+            if (!showLabel && !showBundle)
+                footerInfo.visible = ___m_HasPreview;
 
-            if (___m_PreviousPreviewExpandedState)
-                footerInfo.style.marginBottom = -6;
-            else
-                footerInfo.style.marginBottom = 0;
+            var expanded = ___m_PreviousPreviewExpandedState;
+            if (expanded)
+            {
+                var margin = 0;
+                
+                if (!showLabel && !showBundle)
+                    margin = -6;
+                else if (showLabel && !showBundle)
+                    margin = -4;
+                else
+                    margin = 0;
+                
+                footerInfo.style.marginBottom = margin;
+            }
         }
     }
 }

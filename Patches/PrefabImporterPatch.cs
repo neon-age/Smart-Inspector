@@ -19,29 +19,40 @@ namespace AV.Inspector
 
         static GUIContent tempContent = new GUIContent();
 
-        /*
         class PrefabAssetTarget
         {
             public Object assetTarget;
             public Object variantBase;
         }
         
-        static Dictionary<Editor, PrefabAssetTarget> prefabTargets = new Dictionary<Editor, PrefabAssetTarget>();*/
+        static Dictionary<Editor, PrefabAssetTarget> prefabTargets = new Dictionary<Editor, PrefabAssetTarget>();
 
-        /*
+        static InspectorPrefs prefs => InspectorPrefs.Loaded;
+        
         [InitializeOnInspector]
         static void OnInspector()
         {
             Runtime.SmartInspector.OnSetupEditorElement += x =>
             {
-                if (x.header.name == "Prefab ImporterHeader")
+                if (x.header.name != "Prefab ImporterHeader")
+                    return;
+                
+                var showCompact = prefs.enablePlugin && prefs.enhancements.compactPrefabInspector;
+
+                x.Display(!showCompact);
+                Hide();
+               // x.Register<GeometryChangedEvent>(_ => Hide());
+
+               x.header.x.onGUIHandler += Hide;
+
+                // Hide vanilla prefab header, so we can make our own
+                void Hide()
                 {
-                    // Hide vanilla prefab header, so we can make our own
-                    x.header.style.display = DisplayStyle.None;
-                    x.inspector.style.display = DisplayStyle.None;
+                    x.header.Display(!showCompact);
+                    x.inspector.Display(!showCompact);
                 }
             };
-        }*/
+        }
         
         protected override IEnumerable<Patch> GetPatches()
         {
@@ -51,18 +62,17 @@ namespace AV.Inspector
             cacheHasMixedBaseInfo = AccessTools.Method(importerType, "CacheHasMixedBaseVariants");
             openPrefab = AccessTools.Method(typeof(PrefabStageUtility), "OpenPrefab", new [] { typeof(string) });
             
-            yield break;
-/*
             var onEnable = AccessTools.Method(importerType, "OnEnable");
             var onInspectorGUI = AccessTools.Method(importerType, "OnInspectorGUI");
             var onHeaderControlsGUI = AccessTools.Method(importerType, "OnHeaderControlsGUI");
 
+            yield break;
+            /*
             yield return new Patch(onEnable, postfix: nameof(OnEnable_));
             yield return new Patch(onInspectorGUI, nameof(_OnInspectorGUI), apply: Apply.OnGUI);
             yield return new Patch(onHeaderControlsGUI, nameof(_OnHeaderControlsGUI), nameof(OnHeaderControlsGUI_), apply: Apply.OnGUI);*/
         }
 
-        /*
         static void OnEnable_(Editor __instance)
         {
             var assetTarget = (Object)assetTargetInfo.GetValue(__instance);
@@ -137,6 +147,6 @@ namespace AV.Inspector
         static void OnHeaderControlsGUI_(Editor __instance)
         {
             return;
-        }*/
+        }
     }
 }

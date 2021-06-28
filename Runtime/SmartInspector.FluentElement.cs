@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.UIElements.Experimental;
@@ -10,10 +11,10 @@ namespace AV.Inspector.Runtime
 
         public partial class FluentElement<T> where T : VisualElement
         {
-            public virtual T x { get; internal set; }
-            
+            public virtual T x { get; }
             
             public string name { get => x.name; set => x.name = value; }
+            public FluentElement parent => x.parent;
             
             public IStyle style => x.style;
             public IResolvedStyle resolvedStyle => x.resolvedStyle;
@@ -26,6 +27,8 @@ namespace AV.Inspector.Runtime
 
             public static implicit operator FluentElement<T>(T x) => new FluentElement<T>(x);
             public static implicit operator T(FluentElement<T> x) => x.x;
+
+            public FluentElement<VisualElement> this[int index] => x[index]?.Fluent();
         }
         
         public partial class FluentElement : FluentElement<VisualElement>

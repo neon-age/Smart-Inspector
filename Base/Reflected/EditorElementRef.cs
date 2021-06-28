@@ -18,6 +18,8 @@ namespace AV.Inspector
         static FieldInfo m_WasVisible = AccessTools.Field(type, "m_WasVisible");
         static PropertyInfo m_InspectorElement = AccessTools.Property(type, "m_InspectorElement");
 
+        static MethodInfo reinit = AccessTools.Method(type, "Reinit");
+        
         static Func<VisualElement, Editor> getEditor;
         static Func<VisualElement, int> getEditorIndex;
         static Func<VisualElement, bool> getWasVisible;
@@ -34,7 +36,13 @@ namespace AV.Inspector
             getWasVisible = Expression.Lambda<Func<VisualElement, bool>>(Expression.Field(elementConvert, m_WasVisible), elementParam).Compile();
             getInspectorElement = Expression.Lambda<Func<VisualElement, InspectorElement>>(Expression.Property(elementConvert, m_InspectorElement), elementParam).Compile();
         }
-        
+
+
+        public static void Reinit(VisualElement editorElement)
+        {
+            var editorIndex = GetEditorIndex(editorElement);
+            reinit.Invoke(editorElement, new object[] { editorIndex });
+        }
 
         public static Editor GetEditor(VisualElement editorElement)
         {

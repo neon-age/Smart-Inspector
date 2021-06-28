@@ -19,14 +19,15 @@ namespace AV.Inspector
         public bool enablePlugin = true;
         public bool showTabsBar = true;
         
-        public Components components;
+        public Headers headers;
         public Enhancements enhancements;
         public AdditionalButtons additionalButtons;
         
 
         [Serializable]
-        public class Components
+        public class Headers
         {
+            public bool showScript = true;
             public bool showPresets = true;
             public bool showHelp;
             public bool showMenu;
@@ -34,10 +35,10 @@ namespace AV.Inspector
         [Serializable]
         public class Enhancements
         {
-            public bool betterComponentDragging;
-            [Space]
             public bool compactPrefabInspector;
             public bool compactUnityEvents;
+            public bool compactScrollbar;
+            public bool smarterComponentDragging;
         }
         [Serializable]
         public class AdditionalButtons
