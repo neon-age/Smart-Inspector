@@ -1,5 +1,7 @@
 using System;
 using System.Threading.Tasks;
+using AV.Inspector.Runtime;
+using AV.UITK;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEditorInternal;
@@ -7,7 +9,6 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
 using EditorElement = AV.Inspector.Runtime.SmartInspector.EditorElement;
-using static AV.Inspector.Runtime.SmartInspector;
 
 namespace AV.Inspector
 {
@@ -31,7 +32,7 @@ namespace AV.Inspector
 
         Texture2D preview;
         Texture2D thumbnail;
-        VisualElement icon;
+        FluentUITK.Icon icon;
 
         Object target => editor.target;
         
@@ -53,7 +54,7 @@ namespace AV.Inspector
             preview = AssetPreview.GetAssetPreview(target);
             thumbnail = AssetPreview.GetMiniThumbnail(target);
             
-            icon = new Icon(maxSize: 16);
+            icon = new FluentUITK.Icon();
             Add(icon);
             
             this.Query(className: "unity-toggle__input").First().RemoveFromHierarchy();
@@ -142,7 +143,7 @@ namespace AV.Inspector
             if (!preview)
                 preview = AssetPreview.GetAssetPreview(target);
             
-            icon.style.backgroundImage = preview ? preview : thumbnail;
+            icon.image = preview ? preview : thumbnail;
         }
 
         string GetPrefKey()

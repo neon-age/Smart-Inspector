@@ -47,6 +47,8 @@ namespace AV.Inspector
         static void Init_(VisualElement __instance, IMGUIContainer ___m_Header, IMGUIContainer ___m_Footer, EditorWindow ___inspectorWindow)
         {
             var smartInspector = SmartInspector.RebuildingInspector;
+            if (smartInspector == null)
+                return;
             
             var data = CreateEditorElement(__instance, ___m_Header, ___m_Footer, smartInspector);
             smartInspector.SetupEditorElement(data);

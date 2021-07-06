@@ -12,6 +12,8 @@ namespace AV.Inspector
 	{
 		static readonly string HarmonyID = typeof(Patcher).Assembly.GetName().Name;
 
+		static InspectorPrefs prefs = InspectorPrefs.Loaded;
+
 		static Harmony harmony;
 		static List<PatchBase> patches;
 		
@@ -19,8 +21,11 @@ namespace AV.Inspector
 
 		
 		[InitializeOnLoadMethod]
-		static async void Init()
+		internal static async void ApplyPatches()
 		{
+			if (!prefs.enabled)
+				return;
+				
 			// https://github.com/neon-age/Smart-Inspector/issues/5
 			if (Application.isBatchMode)
 				return;
@@ -45,39 +50,43 @@ namespace AV.Inspector
 			return skin != null && skin.name != "GameSkin";
 		}
 
-		static void GetPatches()
-		{
-			if (patches != null) 
-				return;
-			patches = new List<PatchBase>();
-				
-			foreach (var type in TypeCache.GetTypesDerivedFrom(typeof(PatchBase)))
-			{
-				if (type.IsAbstract) 
-					continue;
-					
-				var instance = Activator.CreateInstance(type) as PatchBase;
-				patches.Add(instance);
-			}
-		}
-
-		static void ApplyPatches(PatchBase.Apply apply)
+		internal static List<PatchBase> GetPatches()
 		{
 			if (harmony == null)
 				harmony = new Harmony(HarmonyID);
 			
+			if (patches == null)
+			{
+				patches = new List<PatchBase>();
+
+				foreach (var type in TypeCache.GetTypesDerivedFrom<PatchBase>())
+				{
+					if (type.IsAbstract)
+						continue;
+
+					var patch = (PatchBase)Activator.CreateInstance(type);
+					patch.harmony = harmony;
+					
+					patches.Add(patch);
+				}
+			}
+			return patches;
+		}
+
+		static void ApplyPatches(PatchBase.Apply apply)
+		{
 			foreach (var patch in patches)
-				patch.ApplyPatches(harmony, apply);
+				patch.ApplyPatches(apply);
 		}
 		
 
-		internal static void RemovePatches()
+		internal static void UnpatchAll()
 		{
 			if (harmony == null) 
 				return;
 			
 			foreach (var patch in patches)
-				patch.UnpatchAll(harmony);
+				patch.UnpatchAll();
 		}
 	}
 }

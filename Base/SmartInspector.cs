@@ -1,24 +1,24 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using UnityEditor;
-using UnityEditor.UIElements;
 using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.UIElements;
 using AV.Inspector.Runtime;
+using AV.UITK;
 using Object = UnityEngine.Object;
-using Random = UnityEngine.Random;
 using EditorElement = AV.Inspector.Runtime.SmartInspector.EditorElement;
-using Space = AV.Inspector.Runtime.SmartInspector.Space;
+using Space = AV.UITK.FluentUITK.Space;
 
 namespace AV.Inspector
 {
     internal partial class SmartInspector
     {
+        const string UserElementClass = "user-element";
         const int ComponentPaddingBottom = 5;
-        const int ScrollbarFadeMS = 50;
+        const int SmoothScrollMS = 250;
+        const int SmoothScrollMinMS = 10;
+        const int SmoothScrollMaxMS = 500;
         
         static readonly TypeCache.MethodCollection InitOnInspectorMethods = TypeCache.GetMethodsWithAttribute<InitializeOnInspectorAttribute>();
 
@@ -42,9 +42,7 @@ namespace AV.Inspector
             public EditorElement element;
         }
         
-        static InspectorPrefs prefs => InspectorPrefs.Loaded;
-        static bool showTabsBar => prefs.enablePlugin && prefs.showTabsBar;
-        static bool useCompactScrollbar => prefs.enablePlugin && prefs.enhancements.compactScrollbar;
+        static InspectorPrefs prefs = InspectorPrefs.Loaded;
 
         internal static SmartInspector RebuildingInspector;
         internal static Dictionary<EditorWindow, SmartInspector> Injected = new Dictionary<EditorWindow, SmartInspector>();
@@ -53,13 +51,16 @@ namespace AV.Inspector
         internal EditorWindow propertyEditor;
         internal ActiveEditorTracker tracker;
         
-        VisualElement root;
-        VisualElement mainContainer;
-        VisualElement scrollbar;
-        VisualElement contentViewport;
+        FluentElement<VisualElement> root;
+        FluentElement<VisualElement> mainContainer;
+        FluentElement<VisualElement> contentViewport;
+        FluentElement<ScrollView> scrollView;
+        FluentElement<Scroller> scrollbar;
+        
         VisualElement editorsList;
         VisualElement gameObjectEditor;
         
+
         internal InspectorTabsBar toolbar;
         internal TooltipElement tooltip { get; private set; }
 
@@ -96,22 +97,20 @@ namespace AV.Inspector
         InjectResult TryInject()
         {
             this.root = propertyEditor.rootVisualElement;
-            this.mainContainer = root.Query(className: "unity-inspector-main-container").First();
-            this.editorsList = root.Query(className: "unity-inspector-editors-list").First();
+            this.mainContainer = root.Get(".unity-inspector-main-container");
+            this.editorsList = root.Get(".unity-inspector-editors-list");
             
             if (editorsList == null)
                 return InjectResult.NoList;
 
-            var scrollView = root.Query(className: "unity-inspector-root-scrollview").First();
+            scrollView = root.Get<ScrollView>(".unity-inspector-root-scrollview").First();
+            scrollbar = scrollView.Get<Scroller>(".unity-scroller--vertical");
+            contentViewport = scrollView.Get("#unity-content-viewport");
             
-            scrollbar = scrollView.Query(className: "unity-scroller--vertical");
-            contentViewport = scrollView.Query(name: "unity-content-viewport");
+            root.Register<MouseMoveEvent>(OnRootMouseMove);
+            contentViewport.Register<GeometryChangedEvent>(OnContentViewportLayout);
             
-            scrollbar.AddToClassList("root-scroll");
-            
-            root.RegisterCallback<MouseMoveEvent>(OnRootMouseMove);
-            contentViewport.RegisterCallback<GeometryChangedEvent>(OnContentViewportLayout);
-            
+            SetupScrollView();
             Init();
 
             if (gameObjectEditor == null)
@@ -127,24 +126,64 @@ namespace AV.Inspector
 
             return InjectResult.Final;
         }
-        
-        void Init()
+
+        void SetupScrollView()
         {
-            tooltip = root.Query<TooltipElement>(className: "smart-inspector--tooltip");
-            
-            if (tooltip == null)
+            scrollView.AddClass("root-scroll");
+
+            foreach (var evt in FluentUITK.GetCallbacks(scrollView))
             {
-                tooltip = new TooltipElement();
-                tooltip.AddToClassList("smart-inspector--tooltip");
-                root.Add(tooltip);
+                if (evt.Is<WheelEvent>())
+                    evt.Unregister();
+            }
+            scrollView.Register<WheelEvent>(OnScrollWheel);
+        }
+
+        void OnScrollWheel(WheelEvent evt)
+        {
+            var layout = scrollView.x.layout;
+            var content = scrollView.x.contentContainer;
+            var vertical = scrollView.x.verticalScroller;
+
+            if (prefs.useSmoothScrolling)
+            {
+                var delta = evt.delta.y / 20;
+
+                vertical.experimental.animation.Start(0, delta, SmoothScrollMS, (e, value) =>
+                {
+                    Scroll(value);
+                });
+            }
+            else
+            {
+                Scroll(evt.delta.y);
             }
 
-            root.styleSheets.Add(coreStyles);
-            
-            if (!EditorGUIUtility.isProSkin)
-                root.styleSheets.Add(coreStylesLight);
-            
+            void Scroll(float delta)
+            {
+                if (delta != vertical.value)
+                    evt.StopPropagation();
+                
+                if (content.layout.height - layout.height > 0)
+                {
+                    if (delta < 0)
+                        vertical.ScrollPageUp(Mathf.Abs(delta));
+                    else if (delta > 0)
+                        vertical.ScrollPageDown(Mathf.Abs(delta));
+                }
+            }
+        }
+
+        void Init()
+        {
             editorsList.styleSheets.Add(headerStyles);
+            
+            tooltip = root.Get<TooltipElement>(".smart-inspector--tooltip");
+            if (tooltip == null)
+            {
+                tooltip = new TooltipElement().Fluent().AddClass("smart-inspector--tooltip");
+                root.Add(tooltip);
+            }
             
             ScrollbarRedraw(Vector2.zero);
         }
@@ -155,20 +194,20 @@ namespace AV.Inspector
         }
         void OnContentViewportLayout(GeometryChangedEvent evt)
         {
-            if (useCompactScrollbar)
-                contentViewport.style.marginRight = 0;
+            if (prefs.useCompactScrollbar)
+                contentViewport?.Margin(right: 0);
         }
         
         void ScrollbarRedraw(Vector2 mousePos)
         {
-            if (!useCompactScrollbar)
+            if (!prefs.useCompactScrollbar)
             {
                 scrollbar.style.opacity = 1;
                 scrollbar.style.width = 13;
                 return;
             }
 
-            var layout = root.layout;
+            var layout = root.x.layout;
             
             var max = layout.xMax;
             var min = max - 150;
@@ -195,6 +234,10 @@ namespace AV.Inspector
             wasAnyLoaded = true;
         }
 
+        void OnUnpatch()
+        {
+            RemoveUserElements();
+        }
         
         /// <see cref="PropertyEditorPatch.RebuildContentsContainers_"/>
         internal void OnRebuildContent(RebuildStage stage)
@@ -204,14 +247,10 @@ namespace AV.Inspector
 
             if (root == null)
                 return;
+            if (!prefs.enabled)
+                OnUnpatch();
 
-            toolbar?.Fluent().Display(showTabsBar);
-
-            if (useCompactScrollbar)
-                root.styleSheets.Add(scrollViewStyles);
-            else
-                root.styleSheets.Remove(scrollViewStyles);
-
+            DisplayOptionalParts();
             OnContentViewportLayout(null);
             
             //Debug.Log(stage);
@@ -224,15 +263,26 @@ namespace AV.Inspector
             
             if (stage == RebuildStage.BeforeRepaint)
             {
-                RebuildToolbar();
+              
             }
             
             if (stage == RebuildStage.AfterRepaint)
             {
+                RebuildToolbar();
+                
                 // TODO: Fix one-frame issue when dragged element keeps expanded layout of element that was last there
             }
         }
 
+        void DisplayOptionalParts()
+        {
+            toolbar?.Fluent().Display(prefs.showTabsBar);
+
+            if (prefs.useCompactScrollbar)
+                root.styleSheets.Add(scrollViewStyles);
+            else
+                root.styleSheets.Remove(scrollViewStyles);
+        }
         
         void RebuildToolbar()
         {
@@ -241,11 +291,7 @@ namespace AV.Inspector
 
         void RemoveUserElements()
         {
-            editorsList?.Query(className: Runtime.SmartInspector.UserElementClass).ForEach(x =>
-            {
-                //Debug.Log(x);
-                x.RemoveFromHierarchy();
-            });
+            editorsList?.Query(className: UserElementClass).ForEach(x => x.RemoveFromHierarchy());
         }
 
         
@@ -256,7 +302,7 @@ namespace AV.Inspector
             var header = x.header;
             var inspector = x.inspector;
             var footer = x.footer;
-            var data = x.Get<SubData>();
+            var data = x.Get<SubData>().First();
             
             if (x.isGo)
             {
@@ -268,6 +314,9 @@ namespace AV.Inspector
             header.AddClass("header");
             inspector.AddClass("inspector");
             footer.AddClass("footer");
+
+            header.onAddChild = e => e.AddToClassList("user-element");
+            inspector.onAddChild = e => e.AddToClassList("user-element");
 
             SetupSubData();
             SetupEditorElement();
@@ -312,13 +361,22 @@ namespace AV.Inspector
             {
                 if (x.isComponent)
                 {
-                    x.header.FlexDirection(FlexDirection.RowReverse);
+                    x.header.Direction(FlexDirection.RowReverse);
+                    
+                    var width = 64;
+                    if (!prefs.showHelp)
+                        width -= 20;
+                    if (!prefs.showPreset)
+                        width -= 20;
                     
                     // Temp solution for component header buttons padding
-                    if (!x.header.Has<Space>("#rightSpace"))
+                    if (!x.header.Has("#buttonsPadding", out Space space))
                     {
-                        x.header.x.Add(new Space(64) { name = "rightSpace" });
+                        space = new Space { name = "buttonsPadding" };
+                        x.header.x.Add(space);
                     }
+
+                    space.style.width = width;
                 }
             }
             void SetupInspectorElement()
@@ -329,8 +387,8 @@ namespace AV.Inspector
 
             void SetupComponentInspector()
             {
-                var inspectorContainer = inspector.Get<IMGUIContainer>() ?? 
-                                         inspector.Get(".unity-inspector-element__custom-inspector-container");
+                var inspectorContainer = inspector.Get<IMGUIContainer>().First() ?? 
+                                         inspector.Get(".unity-inspector-element__custom-inspector-container").First();
 
                 if (inspectorContainer != null)
                 {

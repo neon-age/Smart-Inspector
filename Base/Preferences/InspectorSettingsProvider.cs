@@ -1,5 +1,8 @@
 
+using System.Reflection;
 using AV.Inspector.Runtime;
+using AV.UITK;
+using HarmonyLib;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -12,6 +15,8 @@ namespace AV.Inspector
         const string Title = "Smart Inspector";
         const string UIPath = "Preferences/Open Labs/Smart Inspector";
         
+        static PropertyInfo settingsWindowInfo = AccessTools.Property(typeof(SettingsProvider), "settingsWindow");
+        
         [SettingsProvider]
         public static SettingsProvider CreateProvider() => new InspectorSettingsProvider(UIPath, SettingsScope.User);
 
@@ -20,39 +25,20 @@ namespace AV.Inspector
         
         public override void OnActivate(string searchContext, VisualElement root)
         {
+            var window = (EditorWindow)settingsWindowInfo.GetValue(this);
+            window.SetAntiAliasing(8);
+            
             var prefs = InspectorPrefs.LoadFromRegistry();
 
-            var ui = new InspectorPrefsUI(prefs).Fluent();
-            
-            var scrollView = new ScrollView();
-            scrollView.Add(ui);
+            var ui = new InspectorPrefsUI(prefs);
             
             root.Add(CreateBigTitle());
-            root.Add(scrollView);
-
-            var wasJustActivated = true;
-            EditorApplication.delayCall += () => wasJustActivated = false;
-            
-            ui.Register<ChangeEvent<bool>>(SaveAndRebuildInspectors);
-            
-            void SaveAndRebuildInspectors<TValue>(ChangeEvent<TValue> evt)
-            {
-                // ChangeEvent is called when PropertyFields are just being created, we must avoid that
-                if (wasJustActivated)
-                    return;
-                /*
-                var x = evt.target.Fluent();
-                if (!x.parent.HasClass(InspectorPrefsUI.RequiresRebuildClass))
-                    return;*/
-                
-                prefs.SaveToRegistry();
-                PropertyEditorRef.RebuildAllInspectors();
-            }
+            root.Add(ui);
         }
 
         Label CreateBigTitle()
         {
-            return new Label(Title).Fluent().FontSize(19).FontStyle(FontStyle.Bold).FlexGrow(0).Padding(2, 9, 2).Margin(bottom: 5);
+            return new Label(Title).Fluent().FontSize(19).FontStyle(FontStyle.Bold).Grow(0).Padding(2, 9, 2).Margin(bottom: 2);
         }
     }
 }

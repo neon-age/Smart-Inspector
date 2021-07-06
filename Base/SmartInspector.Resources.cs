@@ -5,9 +5,6 @@ namespace AV.Inspector
 {
     internal partial class SmartInspector
     {
-        internal static StyleSheet coreStyles => FindStyleSheet(guid: "a65295aa1e4ad0e418b38767b4b62004");
-        internal static StyleSheet coreStylesLight => FindStyleSheet(guid: "26058bff54cdbee4fb77f501595a2baf");
-        
         internal static StyleSheet tooltipStyles => FindStyleSheet(guid: "080805133721dc943a83773c25479977");
         internal static StyleSheet scrollViewStyles => FindStyleSheet(guid: "46cdd7b95ede0f14390e6a26d6913911");
         internal static StyleSheet headerStyles => FindStyleSheet(guid: "d200692a7d7191c4f8832b720dbe739e");

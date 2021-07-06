@@ -6,11 +6,8 @@ namespace AV.Inspector
 {
     internal class EditorHeaderItemPatch : PatchBase
     {
-        static InspectorPrefs prefs => InspectorPrefs.Loaded;
-        static bool showHelp => !prefs.enablePlugin || prefs.headers.showHelp;
-        static bool showPreset => !prefs.enablePlugin || prefs.headers.showPresets;
-        static bool showMenu => !prefs.enablePlugin || prefs.headers.showMenu;
-        
+        static InspectorPrefs prefs = InspectorPrefs.Loaded;
+
         protected override IEnumerable<Patch> GetPatches()
         {
             var attributeType = EditorAssembly.GetType("UnityEditor.EditorHeaderItemAttribute");
@@ -29,12 +26,12 @@ namespace AV.Inspector
 
         static bool _HelpIconButton()
         {
-            return showHelp;
+            return prefs.showHelp;
         }
 
         static bool _DrawPresetButton()
         {
-            return showPreset;
+            return prefs.showPreset;
         }
     }
 }

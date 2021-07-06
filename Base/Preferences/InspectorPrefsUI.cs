@@ -1,5 +1,6 @@
 
 using AV.Inspector.Runtime;
+using AV.UITK;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -9,111 +10,218 @@ namespace AV.Inspector
 {
     internal class InspectorPrefsUI : VisualElement
     {
-        internal const string RequiresRebuildClass = "requires-rebuild";
+        StyleSheet styleSheet = FluentUITK.FindStyleSheet(guid: "6932d1ef107ed0d49a54fb25d3699c9c");
+        StyleSheet stylesLight = FluentUITK.FindStyleSheet(guid: "3ebaa7bab52db3c40b0457ab4ab089a8");
         
-        StyleSheet styleSheet = Runtime.SmartInspector.FindStyleSheet(guid: "6932d1ef107ed0d49a54fb25d3699c9c");
-
+        InspectorPrefs prefs;
         SerializedObject serialized;
+        bool wasJustCreated;
+        
+        FluentElement<InspectorPrefsUI> ui;
+        FluentUITK.Tab enablePlugin;
+
+        FluentElement<VisualElement> optionsPanel;
+        FluentElement<VisualElement> patchesPanel;
         
         
         public InspectorPrefsUI(InspectorPrefs prefs)
         {
+            this.prefs = prefs;
             this.serialized = new SerializedObject(prefs);
-            CreateUI();
+            
+            styleSheets.Add(styleSheet);
+            if (!FluentUITK.isProSkin)
+                styleSheets.Add(stylesLight);
+            
+            ui = this.Fluent();
+            ui.Bind(serialized);
+            ui.OnChange<bool>(OnChange);
+
+            optionsPanel = CreateOptionsPanel();
+            patchesPanel = new InspectorPatchesPanel();
+
+            var scrollView = new ScrollView().Fluent().Shrink(-100).Add(
+                optionsPanel,
+                patchesPanel
+                );
+            
+            ui.Add(
+                CreateTopPanel(),
+                scrollView
+            );
         }
 
-        void CreateUI()
+        void SaveAndRebuildInspectors()
         {
-            var me = this.Fluent();
-            
-            me.Bind(serialized);
-            me.RegisterFewShots<GeometryChangedEvent>(_ => OnFirstLayoutChanges(), shots: 2);
+            prefs.SaveToRegistry();
+            PropertyEditorRef.RebuildAllInspectors();
+        }
 
-            var topBar = me.NewHorizontalGroup().AddClass("top-bar", "separator").Add(
+        VisualElement CreateTabsBar()
+        {
+            var me = ui.NewTabsBar(Styles.Button);
+            
+            me.x.AddNewTab(optionsPanel, "Options").Out(out var optionsTab);
+            me.x.AddNewTab(patchesPanel, "Patches");
+
+            me.OnAttach(optionsTab.x.Show);
+            return me;
+        }
+
+        VisualElement CreateTopPanel()
+        {
+            var me = ui.NewGroup().Name("Top Panel");
+            
+            var topBar = me.NewRow().AddClass("top-bar").Add(
                 
-                Hyperlink("Github", PackageInfo.RepoURL),
-                Bullet(),
-                Hyperlink("Patreon", PackageInfo.PatreonURL),
-                Bullet(),
-                Hyperlink("Discord", PackageInfo.OpenLabsDiscordURL),
+                me.NewHyperlink("Github", PackageInfo.RepoURL),
+                me.NewBullet(),
+                me.NewHyperlink("Patreon", PackageInfo.PatreonURL),
+                me.NewBullet(),
+                me.NewHyperlink("Discord", PackageInfo.OpenLabsDiscordURL),
                 
                 me.NewFlexibleSpace(),
                 
                 SaveAsButton(),
                 LoadFromButton()
-                );
+            );
 
-            var topGroup = me.NewIndentedGroup().AddClass("top-group", "separator");
+            var topGroup = me.NewRow().Margin(left: 6, right: 4).AddClass("top-group").Add(
+                
+                CreateTabsBar(),
+                
+                enablePlugin = me.NewTab(style: Styles.ButtonBlue)
+                    .Grow(1)
+                    .Bind<InspectorPrefs>(x => x.enablePlugin)
+                    .OnChange<bool>(evt => SetEnablePluginState(evt.newValue))
+            );
+
+            me.Add(topBar);
+            me.Add(topGroup);
+            return me;
+        }
+
+        VisualElement CreateOptionsPanel()
+        {
+            wasJustCreated = true;
+            EditorApplication.delayCall += () => wasJustCreated = false;
+
+            var me = ui.NewGroup().Name("Options");
             
-            var enablePlugin = me.NewField<InspectorPrefs>(x => x.enablePlugin);
-            var showTabsBar = me.NewField<InspectorPrefs>(x => x.showTabsBar);
+            me.OnLayoutUpdate((_, c) =>
+            {
+                if (c.totalCalls > 1)
+                    c.Unregister();
+                OnFirstLayoutUpdates();
+            });
 
-            topGroup.Add(enablePlugin);
-            topGroup.Add(showTabsBar);
-
-            var headers = me.NewFoldout("Headers").Add(
-                me.NewField<InspectorPrefs>(x => x.headers.showScript, "Show (Script)"),
+            var toolbar = me.NewHeader("Toolbar").Add(
+                me.NewField<InspectorPrefs>(x => x.toolbar.showTabsBar, "Components Toolbar")
+            );
+            var headers = me.NewHeader("Titlebars").Add(
                 me.NewField<InspectorPrefs>(x => x.headers.showHelp),
                 me.NewField<InspectorPrefs>(x => x.headers.showPresets),
-                me.NewField<InspectorPrefs>(x => x.headers.showMenu)
+                me.NewField<InspectorPrefs>(x => x.headers.showMenu).Enabled(false)
                 );
-            var enhancements = me.NewFoldout("Quality Of Life").Add(
-                me.NewField<InspectorPrefs>(x => x.enhancements.compactUnityEvents),
-                me.NewField<InspectorPrefs>(x => x.enhancements.compactPrefabInspector).AddClass(RequiresRebuildClass),
-                me.NewField<InspectorPrefs>(x => x.enhancements.compactScrollbar),
-                me.NewField<InspectorPrefs>(x => x.enhancements.smarterComponentDragging, "Improved Component Dragging")
+            var components = me.NewHeader("Components").Add(
+                me.NewField<InspectorPrefs>(x => x.components.showScript, "Show (Script)"),
+                me.NewField<InspectorPrefs>(x => x.components.showScriptField)
             );
-            var additionalButtons = me.NewFoldout("Additional Buttons").Add(
+            var enhancements = me.NewHeader("Enhancements").Add(
+                me.NewField<InspectorPrefs>(x => x.enhancements.compactUnityEvents).Enabled(false),
+                me.NewField<InspectorPrefs>(x => x.enhancements.compactPrefabInspector),
+                me.NewField<InspectorPrefs>(x => x.enhancements.compactScrollbar),
+                me.NewField<InspectorPrefs>(x => x.enhancements.smoothScrolling),
+                me.NewField<InspectorPrefs>(x => x.enhancements.smartComponentDragging, "Improved Component Dragging")
+            );
+            var additionalButtons = me.NewHeader("Additional Buttons").Add(
                 me.NewField<InspectorPrefs>(x => x.additionalButtons.addressable),
                 me.NewField<InspectorPrefs>(x => x.additionalButtons.convertToEntity),
                 me.NewField<InspectorPrefs>(x => x.additionalButtons.assetLabels),
                 me.NewField<InspectorPrefs>(x => x.additionalButtons.assetBundle)
             );
 
-            me.Add(topBar);
-            me.Add(topGroup);
+            me.Add(toolbar);
+            
             me.Add(headers);
+            me.Add(components);
             me.Add(enhancements);
             me.Add(additionalButtons);
-
-            styleSheets.Add(styleSheet);
             
-            VisualElement Bullet() => me.NewText("•").FlexShrink(0).FontSize(8);
+            me.Add(me.NewSpace(height: 20));
+
+            me.x.Query<FluentUITK.Header>().ForEach(x => x.Fluent().Style(Styles.Separator));
+            
+            return me;
+        }
+        
+        void OnChange<TValue>(ChangeEvent<TValue> evt)
+        {
+            if (wasJustCreated)
+                return;
+            
+            var e = evt.target as VisualElement;
+            var boolEvt = evt as ChangeEvent<bool>;
+
+            if (e == enablePlugin)
+            {
+                var patch = boolEvt.newValue;
+                prefs.enablePlugin = patch;
+                
+                SetEnablePluginState(true, patch ? "Patching..." : "Unpatching...");
+                enablePlugin.MarkDirtyRepaint();
+                
+                EditorApplication.delayCall += () =>
+                {
+                    SetEnablePluginState(patch);
+                    PatchOrUnpatchAll(patch);
+                };
+            }
+            else
+            {
+                SaveAndRebuildInspectors();
+            }
+        }
+
+        void PatchOrUnpatchAll(bool patch)
+        {
+            if (patch)
+            {
+                Patcher.ApplyPatches();
+                SaveAndRebuildInspectors();
+            }
+            else
+            {
+                SaveAndRebuildInspectors();
+                Patcher.UnpatchAll();
+            }
+        }
+        
+        void SetEnablePluginState(bool enabled, string text = null)
+        {
+            enablePlugin.text = text ?? (enabled ? "Disable Plugin" : "Enable Plugin");
+            
+            this.Query<FluentUITK.Header>().ForEach(x => x.container.SetEnabled(enabled));
         }
 
         Button SaveAsButton()
         {
-            return new Button { text = "Save As..." };
+            return ui.NewButton("Save As...").Enabled(false);
         }
         Button LoadFromButton()
         {
-            return new Button { text = "Load From..." };
-        }
-        
-        Label Hyperlink(string text, string url)
-        {
-            var link = new Label(text).Fluent().RegisterClick(_ => Application.OpenURL(url)).AddClass("hyperlink");
-            
-            link.TextOverflow(TextOverflow.Ellipsis);
-            link.x.tooltip = url;
-            
-            return link;
+            return ui.NewButton("Load...").Enabled(false);
         }
 
-        void OnFirstLayoutChanges()
+        void OnFirstLayoutUpdates()
         {
-            this.Query<Label>(className: "unity-property-field__label").ForEach(ExtendLabel);
             this.Query<Foldout>().ForEach(TurnFoldoutIntoHeader);
+            ui.x.Query<Toggle>().ForEach(e => e.Fluent().Style(Styles.ToggleLeft));
         }
         
-        void ExtendLabel(Label x)
-        {
-            x.style.minWidth = 200;
-        }
         void TurnFoldoutIntoHeader(Foldout x)
         {
             x.value = true;
-            x.AddToClassList("separator");
             x.RemoveFromClassList("unity-foldout");
 
             x.Query<Toggle>().First().pickingMode = PickingMode.Ignore;

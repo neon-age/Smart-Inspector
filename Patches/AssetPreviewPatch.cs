@@ -14,11 +14,8 @@ namespace AV.Inspector
 {
     internal class AssetPreviewPatch : PatchBase
     {
-        static InspectorPrefs prefs => InspectorPrefs.Loaded;
-        static bool showLabel => !prefs.enablePlugin || prefs.additionalButtons.assetLabels;
-        static bool showBundle => !prefs.enablePlugin || prefs.additionalButtons.assetBundle;
-        
-        
+        static InspectorPrefs prefs = InspectorPrefs.Loaded;
+
         protected override IEnumerable<Patch> GetPatches()
         {
             var labelGUIType = EditorAssembly.GetType("UnityEditor.LabelGUI");
@@ -35,12 +32,12 @@ namespace AV.Inspector
 
         static bool _OnLabelGUI()
         {
-            return showLabel;
+            return prefs.showLabel;
         }
 
         static bool _OnAssetBundleNameGUI()
         {
-            return showBundle;
+            return prefs.showBundle;
         }
         
         static void DrawPreviewAndLabels_(EditorWindow __instance, bool ___m_HasPreview, bool ___m_PreviousPreviewExpandedState)
@@ -52,7 +49,10 @@ namespace AV.Inspector
             footerInfo.style.marginBottom = 0;
             footerInfo.visible = true;
 
-            if (!prefs.enablePlugin) 
+            var showLabel = prefs.showLabel;
+            var showBundle = prefs.showBundle;
+
+            if (!prefs.enabled) 
                 return;
             
             if (!showLabel && !showBundle)

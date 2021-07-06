@@ -10,6 +10,14 @@ namespace AV.Inspector
 	internal abstract class PatchBase
 	{
 		protected static Assembly EditorAssembly { get; } = typeof(Editor).Assembly;
+
+		public bool forceSkip
+		{
+			get => EditorPrefs.GetBool(skipKey);
+			set => EditorPrefs.SetBool(skipKey, value);
+		}
+		string skipKey => "Skip " + GetType().FullName;
+
 		
 		public enum Apply
 		{
@@ -41,8 +49,9 @@ namespace AV.Inspector
 				this.apply = apply;
 			}
 		}
-		
-		private List<Patch> patches;
+
+		internal Harmony harmony;
+		readonly List<Patch> patches = new List<Patch>();
 
 		// ReSharper disable once EmptyConstructor
 		// ReSharper disable once PublicConstructorInAbstractClass
@@ -51,10 +60,12 @@ namespace AV.Inspector
 		
 		protected abstract IEnumerable<Patch> GetPatches();
 
-		public void ApplyPatches(Harmony harmony, Apply applyType)
+		public void ApplyPatches(Apply applyType)
 		{
-			if (patches == null)
-				patches = new List<Patch>();
+			if (harmony == null)
+				return;
+			if (forceSkip)
+				return;
 			
 			var type = GetType(); 
 			foreach (var patch in GetPatches())
@@ -90,8 +101,10 @@ namespace AV.Inspector
 			}
 		}
 
-		public void UnpatchAll(Harmony harmony)
+		public void UnpatchAll()
 		{
+			if (harmony == null)
+				return;
 			foreach (var patch in patches)
 			{
 				if (!patch.applied)

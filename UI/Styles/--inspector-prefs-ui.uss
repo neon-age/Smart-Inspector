@@ -1,35 +1,32 @@
 
-.hyperlink {
-    cursor: link;
-    overflow: hidden;
-    
-    flex-grow: 0;
-    flex-shrink: 1;
-    align-self: center;
-    
-    margin-left: 3;
-    margin-right: 3;
-    padding-right: 0;
-    border-bottom-width: 1;
-    
-    color: #7cabf0;
-    border-bottom-color: #7cabf0;
-}
 
 .top-bar {
     align-items: center;
     padding-left: 6;
     padding-right: 3;
-    padding-bottom: 6;
+    padding-bottom: 3;
 }
 .top-group {
     margin-top: 3;
 }
 
-.separator {
-    border-bottom-width: 2;
-    border-bottom-color: rgba(0, 0, 0, 0.25);
+
+Toggle {
+    margin-bottom: 0;
+    height: 20;
 }
+Toggle Label {
+    -unity-text-align: middle-left;
+}
+Toggle:hover #unity-checkmark  {
+    border-width: 1;
+    border-radius: 2;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+Toggle:hover:focus #unity-checkmark  {
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
 
 Foldout {
     padding-top: 3;
@@ -41,9 +38,9 @@ Foldout #unity-content {
 Foldout > Toggle Label {
     -unity-font-style: bold;
     
-    margin-left: 8;
+    left: 9;
     margin-bottom: 1;
 }
 Foldout > Toggle #unity-checkmark {
-    opacity: 0;
+    display: none;
 }
