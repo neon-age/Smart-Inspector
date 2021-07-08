@@ -43,7 +43,6 @@ namespace AV.Inspector
             this.tracker = PropertyEditorRef.GetTracker(inspector.propertyEditor);
 
             name = GetTitle();
-            //tooltip = GetTitle();
             RestoreTabState();
 
             AddToClassList(EditorTabClass);
@@ -145,15 +144,26 @@ namespace AV.Inspector
             
             icon.image = preview ? preview : thumbnail;
         }
+        
+        
+        string GetStateLog()
+        {
+            return $"{LoadState()} {GetPrefKey()}";
+        }
 
         string GetPrefKey()
         {
-            string key;
-            // Save state by guid for assets (usually Materials)
-            if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(target, out var guid, out long localId))
-                key = guid;
-            else // And by full type name for scene objects
+            string key = "";
+
+            if (target is Component)
+            {
                 key = target.GetType().FullName;
+            }
+            // Use guid for assets (usually Materials)
+            else if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(target, out var guid, out long localId))
+            {
+                key = guid;
+            }
 
             return TabStateKeyPrefix + key;
         }

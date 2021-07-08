@@ -185,7 +185,9 @@ namespace AV.UITK
             x.style.color = color; return x;
         }
 
+        #if UNITY_2020_1_OR_NEWER
         public Texture Image() => x.resolvedStyle.backgroundImage.texture;
+        #endif
         public FluentElement<T> Image(Texture texture)
         {
             x.style.backgroundImage = texture as Texture2D; return x;
@@ -223,11 +225,13 @@ namespace AV.UITK
             x.style.unityTextAlign = align; return x;
         }
 
+        #if UNITY_2020_1_OR_NEWER
         public TextOverflow TextOverflow() => x.resolvedStyle.textOverflow;
         public FluentElement<T> TextOverflow(TextOverflow overflow)
         {
             x.style.textOverflow = overflow; return x;
         }
+        #endif
         public FluentElement<T> Overflow(Overflow overflow)
         {
             x.style.overflow = overflow; return x;

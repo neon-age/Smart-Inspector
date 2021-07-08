@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
@@ -187,37 +188,16 @@ namespace AV.Inspector
             
             ScrollbarRedraw(Vector2.zero);
         }
-
+        
+        void OnUnpatch()
+        {
+            RemoveUserElements();
+        }
+        
         void OnRootMouseMove(MouseMoveEvent evt)
         {
             ScrollbarRedraw(evt.mousePosition);
         }
-        void OnContentViewportLayout(GeometryChangedEvent evt)
-        {
-            if (prefs.useCompactScrollbar)
-                contentViewport?.Margin(right: 0);
-        }
-        
-        void ScrollbarRedraw(Vector2 mousePos)
-        {
-            if (!prefs.useCompactScrollbar)
-            {
-                scrollbar.style.opacity = 1;
-                scrollbar.style.width = 13;
-                return;
-            }
-
-            var layout = root.x.layout;
-            
-            var max = layout.xMax;
-            var min = max - 150;
-
-            var lerp = (mousePos.x - min) / (max - min);
-            
-            scrollbar.style.opacity = Mathf.Lerp(0, 1, lerp);
-            scrollbar.style.width = 5;
-        }
-
         
         void FirstInitOnInspectorIfNeeded()
         {
@@ -234,10 +214,6 @@ namespace AV.Inspector
             wasAnyLoaded = true;
         }
 
-        void OnUnpatch()
-        {
-            RemoveUserElements();
-        }
         
         /// <see cref="PropertyEditorPatch.RebuildContentsContainers_"/>
         internal void OnRebuildContent(RebuildStage stage)
@@ -263,25 +239,21 @@ namespace AV.Inspector
             
             if (stage == RebuildStage.BeforeRepaint)
             {
-              
+                RemoveDetachedEditors();
+                RebuildToolbar();
             }
             
             if (stage == RebuildStage.AfterRepaint)
             {
-                RebuildToolbar();
-                
                 // TODO: Fix one-frame issue when dragged element keeps expanded layout of element that was last there
             }
         }
 
-        void DisplayOptionalParts()
+        void RemoveDetachedEditors()
         {
-            toolbar?.Fluent().Display(prefs.showTabsBar);
-
-            if (prefs.useCompactScrollbar)
-                root.styleSheets.Add(scrollViewStyles);
-            else
-                root.styleSheets.Remove(scrollViewStyles);
+            var detachedEditors = editors.Where(x => x.Key.parent == null).ToArray();
+            foreach (var detached in detachedEditors)
+                editors.Remove(detached.Key);
         }
         
         void RebuildToolbar()
@@ -293,6 +265,43 @@ namespace AV.Inspector
         {
             editorsList?.Query(className: UserElementClass).ForEach(x => x.RemoveFromHierarchy());
         }
+        
+        
+        void OnContentViewportLayout(GeometryChangedEvent evt)
+        {
+            if (prefs.useCompactScrollbar)
+                contentViewport?.Margin(right: 0);
+        }
+        
+        void ScrollbarRedraw(Vector2 mousePos)
+        {
+            if (!prefs.useCompactScrollbar)
+            {
+                scrollbar.style.opacity = 1;
+                scrollbar.style.width = 13;
+                return;
+            }
+
+            var layout = root.x.layout;
+            
+            var max = layout.xMax;
+            var min = max - 150;
+
+            var lerp = (mousePos.x - min) / (max - min);
+            
+            scrollbar.style.opacity = Mathf.Lerp(0, 1, lerp);
+            scrollbar.style.width = 5;
+        }
+        
+        void DisplayOptionalParts()
+        {
+            toolbar?.Fluent().Display(prefs.showTabsBar);
+
+            if (prefs.useCompactScrollbar)
+                root.styleSheets.Add(scrollViewStyles);
+            else
+                root.styleSheets.Remove(scrollViewStyles);
+        }
 
         
         /// <see cref="EditorElementPatch.Init_"/>
@@ -303,6 +312,8 @@ namespace AV.Inspector
             var inspector = x.inspector;
             var footer = x.footer;
             var data = x.Get<SubData>().First();
+
+            var cullingEnabled = prefs.useIMGUICulling;
             
             if (x.isGo)
             {
@@ -323,7 +334,7 @@ namespace AV.Inspector
             SetupHeader();
             SetupInspectorElement();
             // Footer is manipulated by EditorElementPatch.Init_
-            
+
             if (!editors.ContainsKey(element))
                 editors.Add(element, x);
             
@@ -359,6 +370,10 @@ namespace AV.Inspector
             }
             void SetupHeader()
             {
+                #if UNITY_2020_1_OR_NEWER
+                header.x.cullingEnabled = cullingEnabled;
+                #endif
+                
                 if (x.isComponent)
                 {
                     x.header.Direction(FlexDirection.RowReverse);
@@ -369,10 +384,10 @@ namespace AV.Inspector
                     if (!prefs.showPreset)
                         width -= 20;
                     
-                    // Temp solution for component header buttons padding
-                    if (!x.header.Has("#buttonsPadding", out Space space))
+                    // Temp solution for component header buttons spacing
+                    if (!x.header.Has("#rightSpace", out Space space))
                     {
-                        space = new Space { name = "buttonsPadding" };
+                        space = new Space { name = "rightSpace" };
                         x.header.x.Add(space);
                     }
 
@@ -381,19 +396,26 @@ namespace AV.Inspector
             }
             void SetupInspectorElement()
             {
-                if (x.isComponent) 
-                    SetupComponentInspector();
+                var container = inspector.Get<IMGUIContainer>().First() ?? 
+                                inspector.Get(".unity-inspector-element__custom-inspector-container").First();
+                
+                if (container != null)
+                    SetupInspectorContainer(container);
             }
 
-            void SetupComponentInspector()
+            void SetupInspectorContainer(VisualElement container)
             {
-                var inspectorContainer = inspector.Get<IMGUIContainer>().First() ?? 
-                                         inspector.Get(".unity-inspector-element__custom-inspector-container").First();
+                if (container is IMGUIContainer imgui)
+                {
+                    #if UNITY_2020_1_OR_NEWER
+                    imgui.cullingEnabled = cullingEnabled;
+                    #endif
+                }
 
-                if (inspectorContainer != null)
+                if (x.isComponent)
                 {
                     // Dragging is calculated based on container layout (it ignores InspectorElement padding)
-                    inspectorContainer.style.paddingBottom = ComponentPaddingBottom;
+                    container.style.paddingBottom = ComponentPaddingBottom;
                     inspector.style.paddingBottom = 0;
                 }
             }

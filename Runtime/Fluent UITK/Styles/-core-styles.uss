@@ -82,6 +82,16 @@ Header > .content > .text {
     background-color: rgb(48, 48, 48);
 }
 
+.tabs-bar .tab.unity-button {
+    background-color: rgb(86, 86, 86);
+}
+.tabs-bar .tab.unity-button:hover {
+    background-color: rgb(96, 96, 96);
+}
+.tabs-bar .tab.unity-button:checked {
+    background-color: rgb(48, 48, 48);
+}
+
 /* ---- Tab ---- */
 .tab {
     align-self: stretch;

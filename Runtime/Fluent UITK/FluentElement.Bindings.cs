@@ -11,6 +11,10 @@ namespace AV.UITK
 {
     public partial class FluentElement<T>
     {
+        // TODO: Challenge! Try to achieve complex binding with InspectorPrefs.PatchesTable 
+        // TODO: SerializedProperty wrapper with linq-like deep iteration, i.e. Where("key", x => x.stringValue == patch.prefKey)
+        
+    
         public FluentElement<T> Bind(string bindingPath)
         {
             if (x is BindableElement bindable)

@@ -69,7 +69,7 @@ namespace AV.Inspector
             
             var window = smartInspector.propertyEditor;
             var tracker = smartInspector.tracker;
-            
+
             
             var data = new EditorElement(element)
             {

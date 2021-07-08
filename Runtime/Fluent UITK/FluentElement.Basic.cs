@@ -19,7 +19,7 @@ namespace AV.UITK
             }
         }
         
-        public FluentElement<T> This(Action<FluentElement<T>> action)
+        public FluentElement<T> This(Action<T> action)
         {
             action.Invoke(x);
             return x;

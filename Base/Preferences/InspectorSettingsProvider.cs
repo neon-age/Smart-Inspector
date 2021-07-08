@@ -28,7 +28,7 @@ namespace AV.Inspector
             var window = (EditorWindow)settingsWindowInfo.GetValue(this);
             window.SetAntiAliasing(8);
             
-            var prefs = InspectorPrefs.LoadFromRegistry();
+            var prefs = InspectorPrefs.LoadFromUserData();
 
             var ui = new InspectorPrefsUI(prefs);
             

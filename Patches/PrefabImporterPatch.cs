@@ -39,7 +39,7 @@ namespace AV.Inspector
                 x.Display(!showCompact);
                 Hide();
 
-               x.header.x.onGUIHandler += Hide;
+                //x.header.x.onGUIHandler += Hide;
 
                 // Hide vanilla prefab header, so we can make our own
                 void Hide()

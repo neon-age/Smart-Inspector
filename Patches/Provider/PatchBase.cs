@@ -10,14 +10,23 @@ namespace AV.Inspector
 	internal abstract class PatchBase
 	{
 		protected static Assembly EditorAssembly { get; } = typeof(Editor).Assembly;
+		
+		static InspectorPrefs prefs = InspectorPrefs.Loaded;
+		
+		string prefKey => GetType().FullName;
 
-		public bool forceSkip
+		[Serializable]
+		internal struct State
 		{
-			get => EditorPrefs.GetBool(skipKey);
-			set => EditorPrefs.SetBool(skipKey, value);
+			public bool forceSkip;
 		}
-		string skipKey => "Skip " + GetType().FullName;
 
+		internal State state
+		{
+			get => prefs.patchesTable.Get(prefKey, @default: new State { forceSkip = false });
+			set => prefs.patchesTable.Set(prefKey, value);
+		}
+		
 		
 		public enum Apply
 		{
@@ -64,7 +73,7 @@ namespace AV.Inspector
 		{
 			if (harmony == null)
 				return;
-			if (forceSkip)
+			if (state.forceSkip)
 				return;
 			
 			var type = GetType(); 

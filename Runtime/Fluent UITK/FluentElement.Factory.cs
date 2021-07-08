@@ -4,6 +4,7 @@ using UnityEngine.UIElements;
 using Space = AV.UITK.FluentUITK.Space;
 using Button = AV.UITK.FluentUITK.Button;
 
+using UIE = UnityEngine.UIElements;
 using static AV.UITK.FluentUITK;
 
 namespace AV.UITK
@@ -117,21 +118,13 @@ namespace AV.UITK
                 .OnClick(() => Application.OpenURL(url), MouseButton.LeftMouse)
                 .AddClass("hyperlink");
             
-            link.TextOverflow(UnityEngine.UIElements.TextOverflow.Ellipsis);
             link.x.tooltip = url;
             
+            #if UNITY_2020_1_OR_NEWER
+            link.TextOverflow(UIE.TextOverflow.Ellipsis);
+            #endif
+
             return link;
         }
-        
-        
-        /*
-        static void SetupClickEvents(FluentElement<VisualElement> x, EventCallback<MouseUpEvent> onUp = default, EventCallback<MouseDownEvent> onDown = default)
-        {
-            if (onDown != null)
-                x.Register(onDown);
-            
-            if (onUp != null)
-                x.OnClick(onUp);
-        }*/
     }
 }

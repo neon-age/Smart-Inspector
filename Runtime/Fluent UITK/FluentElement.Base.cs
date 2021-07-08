@@ -26,13 +26,13 @@ namespace AV.UITK
 
 
         public FluentElement(T x) => this.x = x;
+        public FluentElement<VisualElement> this[int index] => x[index]?.Fluent();
 
         public static implicit operator T(FluentElement<T> x) => x?.x;
         public static implicit operator FluentElement<T>(T x) => new FluentElement<T>(x);
         public static implicit operator FluentElement<T>(UQueryBuilder<T> x) => new FluentElement<T>(x);
-        
 
-        public FluentElement<VisualElement> this[int index] => x[index]?.Fluent();
+        public override string ToString() => x?.ToString();
     }
 
     public partial class FluentElement : FluentElement<VisualElement>

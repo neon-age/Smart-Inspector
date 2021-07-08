@@ -7,18 +7,21 @@ using UnityEngine.UIElements;
 
 namespace AV.Inspector
 {
-    public class InspectorPatchesPanel : VisualElement
+    public class InspectorPatchesUI : VisualElement
     {
         static InspectorPrefs prefs = InspectorPrefs.Loaded;
         
-        public InspectorPatchesPanel()
+        const string ImportantMessage = "Disabling patches will break the functionality, use this only for debugging purposes.";
+        
+        public InspectorPatchesUI()
         {
             var me = this.Fluent();
 
-            var importantBox = me.NewHelpBox("Disabling patches will break the functionality, use this only for debugging purposes.", HelpMessageType.Important);
+            var importantBox = me.NewHelpBox(ImportantMessage, HelpMessageType.Important);
             importantBox.x.content.icon.size = 16;
             me.Add(importantBox);
 
+            
             var toolsIcon = FluentUITK.GetEditorIcon("SceneViewTools");
 
             var group = me.NewHeader("Patches", toolsIcon).Style(Styles.Separator);
@@ -42,15 +45,19 @@ namespace AV.Inspector
 
                 var toggle = new Toggle(text).Fluent();
                 
-                toggle.x.value = !patch.forceSkip;
+                toggle.x.value = !patch.state.forceSkip;
+                
+                
                 toggle.OnChange<bool>((evt, c) =>
                 {
-                    patch.forceSkip = !evt.newValue;
+                    var state = patch.state;
+                    state.forceSkip = !evt.newValue;
+                    patch.state = state;
 
                     if (!prefs.enabled)
                         return;
                     
-                    if (patch.forceSkip)
+                    if (state.forceSkip)
                     {
                         patch.UnpatchAll();
                     }

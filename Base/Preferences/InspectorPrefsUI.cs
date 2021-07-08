@@ -34,11 +34,10 @@ namespace AV.Inspector
                 styleSheets.Add(stylesLight);
             
             ui = this.Fluent();
-            ui.Bind(serialized);
             ui.OnChange<bool>(OnChange);
 
             optionsPanel = CreateOptionsPanel();
-            patchesPanel = new InspectorPatchesPanel();
+            patchesPanel = new InspectorPatchesUI();
 
             var scrollView = new ScrollView().Fluent().Shrink(-100).Add(
                 optionsPanel,
@@ -49,11 +48,13 @@ namespace AV.Inspector
                 CreateTopPanel(),
                 scrollView
             );
+            
+            ui.Bind(serialized);
         }
 
         void SaveAndRebuildInspectors()
         {
-            prefs.SaveToRegistry();
+            prefs.SaveToUserData();
             PropertyEditorRef.RebuildAllInspectors();
         }
 
@@ -82,8 +83,7 @@ namespace AV.Inspector
                 
                 me.NewFlexibleSpace(),
                 
-                SaveAsButton(),
-                LoadFromButton()
+                PresetsButton()
             );
 
             var topGroup = me.NewRow().Margin(left: 6, right: 4).AddClass("top-group").Add(
@@ -93,8 +93,8 @@ namespace AV.Inspector
                 enablePlugin = me.NewTab(style: Styles.ButtonBlue)
                     .Grow(1)
                     .Bind<InspectorPrefs>(x => x.enablePlugin)
-                    .OnChange<bool>(evt => SetEnablePluginState(evt.newValue))
             );
+            SetEnablePluginState(prefs.enabled);
 
             me.Add(topBar);
             me.Add(topGroup);
@@ -128,6 +128,9 @@ namespace AV.Inspector
                 me.NewField<InspectorPrefs>(x => x.components.showScriptField)
             );
             var enhancements = me.NewHeader("Enhancements").Add(
+                #if UNITY_2020_1_OR_NEWER
+                me.NewField<InspectorPrefs>(x => x.enhancements.imguiCulling, "IMGUI Culling"),
+                #endif
                 me.NewField<InspectorPrefs>(x => x.enhancements.compactUnityEvents).Enabled(false),
                 me.NewField<InspectorPrefs>(x => x.enhancements.compactPrefabInspector),
                 me.NewField<InspectorPrefs>(x => x.enhancements.compactScrollbar),
@@ -204,13 +207,10 @@ namespace AV.Inspector
             this.Query<FluentUITK.Header>().ForEach(x => x.container.SetEnabled(enabled));
         }
 
-        Button SaveAsButton()
+        Button PresetsButton()
         {
-            return ui.NewButton("Save As...").Enabled(false);
-        }
-        Button LoadFromButton()
-        {
-            return ui.NewButton("Load...").Enabled(false);
+            var icon = FluentUITK.GetEditorIcon("Preset.Context");
+            return ui.NewButton(icon: icon).Style(Styles.Tab).OnClick(_ => EditorUtils.Presets.ShowMenu(prefs));
         }
 
         void OnFirstLayoutUpdates()

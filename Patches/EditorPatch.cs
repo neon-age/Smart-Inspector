@@ -12,10 +12,10 @@ namespace AV.Inspector
         
         protected override IEnumerable<Patch> GetPatches()
         {
-            var canBeExpanded = AccessTools.Method(typeof(Editor), "CanBeExpandedViaAFoldoutWithoutUpdate");
+            //var canBeExpanded = AccessTools.Method(typeof(Editor), "CanBeExpandedViaAFoldoutWithoutUpdate");
             var drawDefaultInspector = typeof(Editor).GetMethod("DoDrawDefaultInspector", BindingFlags.Static | BindingFlags.NonPublic);
             
-            yield return new Patch(canBeExpanded, prefix: nameof(_CanBeExpandedViaAFoldoutWithoutUpdate));
+            //yield return new Patch(canBeExpanded, prefix: nameof(_CanBeExpandedViaAFoldoutWithoutUpdate));
             yield return new Patch(drawDefaultInspector, prefix: nameof(_DoDrawDefaultInspector));
         }
 
@@ -56,7 +56,10 @@ namespace AV.Inspector
             
             return false;
         }
-
+        
+        
+        // TODO: This causes a zero-padding issue on Sorting Group component, and most likely on some other ones..
+        /*
         // https://github.com/Unity-Technologies/UnityCsReference/blob/master/Editor/Mono/Inspector/Editor.cs#L1161
         static bool _CanBeExpandedViaAFoldoutWithoutUpdate(ref bool __result, SerializedObject ___m_SerializedObject)
         {
@@ -70,6 +73,6 @@ namespace AV.Inspector
             // It goes through every child property and calculates their heights.
             // I think it can safely be replaced with property.hasVisibleChildren, or skipped entirely!
             return false;
-        }
+        }*/
     }
 }

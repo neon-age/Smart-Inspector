@@ -231,7 +231,7 @@ namespace AV.UITK
                 
                 AddCoreStyles(this);
                 AddToClassList(TabClass);
-
+                
                 this.Query(className: "unity-base-field__input").First()?.RemoveFromHierarchy();
                 //RemoveFromClassList("unity-base-field");
                 RemoveFromClassList("unity-base-field--no-label");
@@ -240,6 +240,18 @@ namespace AV.UITK
                 content = new Content(text, icon);
                 Add(content);
             }
+
+            #if !UNITY_2020_2_OR_NEWER
+            protected override void ExecuteDefaultAction(EventBase evt)
+            {
+                base.ExecuteDefaultAction(evt);
+                if (evt is MouseUpEvent)
+                {
+                    // Unbinded value doesn't change in 2019.4 and 2020.1, so do it manually
+                    value = !value;
+                }
+            }
+            #endif
         }
 
 
