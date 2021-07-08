@@ -5,6 +5,10 @@ Peek multiple components without scrolling or expanding. Supports Gizmos!
 
 https://user-images.githubusercontent.com/29812914/121815548-3e2efd80-cca1-11eb-969d-a5f698995e7d.mp4
 
+### Rich Customization
+https://user-images.githubusercontent.com/29812914/124998043-e7d19680-e075-11eb-9060-580519c7f4ab.mp4
+
+
 ### Fluent Injection API
 Customization without limits, using **fluent UITK API**, instant injection and **must-have helpers**!
 
