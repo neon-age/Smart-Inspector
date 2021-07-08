@@ -8,6 +8,8 @@ namespace AV.Inspector.Runtime
 {
     public static partial class SmartInspector
     {
-        public static Action<EditorElement> OnSetupEditorElement;
+        public delegate void OnSetupElement(EditorElement x);
+        
+        public static OnSetupElement OnSetupEditorElement;
     }
 }

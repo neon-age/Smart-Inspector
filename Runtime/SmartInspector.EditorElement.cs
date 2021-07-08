@@ -1,4 +1,7 @@
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
+using AV.UITK;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -6,16 +9,17 @@ namespace AV.Inspector.Runtime
 {
     public static partial class SmartInspector
     {
-        /// Note: the class itself is also wrapped around <see cref="InspectorElement"/>
-        public partial class EditorElement : InspectorElement
+        /// Note: the class itself is inherited from <see cref="FluentElement"/>
+        public partial class EditorElement : FluentElement
         {
             public override VisualElement x => element;
             
-            public InspectorElement list { get; internal set; }
-            public InspectorElement element { get; internal set; }
-            public InspectorElement header { get; internal set; }
-            public InspectorElement inspector { get; internal set; }
-            internal InspectorElement footer { get; set; }
+            public FluentElement list { get; internal set; }
+            public FluentElement element { get; internal set; }
+            
+            public FluentElement<IMGUIContainer> header { get; internal set; }
+            public FluentElement<VisualElement> inspector { get; internal set; }
+            internal FluentElement<IMGUIContainer> footer { get; set; }
 
             public int index { get; internal set; }
             public bool isExpanded => expandedState == 1;
@@ -25,6 +29,8 @@ namespace AV.Inspector.Runtime
             public bool isTransform => target is Transform;
             public bool isComponent => target is Component;
             public bool isMaterial => target is Material;
+
+            public EditorSelection Selection => SmartInspector.Selection;
 
 #if !UNITY_EDITOR
             public Object target => null;
@@ -40,9 +46,9 @@ namespace AV.Inspector.Runtime
             public Object[] targets => editor.targets;
 #endif
 
-            public EditorElement(VisualElement element) : base(element)
+            public EditorElement(VisualElement x) : base(x)
             {
-                this.element = element;
+                this.element = x;
             }
             
             public bool IsTarget<T>(out T target) where T : Object
@@ -50,9 +56,13 @@ namespace AV.Inspector.Runtime
                 target = this.target as T;
                 return target;
             }
+            public bool IsTarget<T>() where T : Object
+            {
+                return this.target is T;
+            }
             
 
-            public void RefreshInspector()
+            public void RebuildInspector()
             {
                 #if UNITY_EDITOR
                 tracker.ForceRebuild();

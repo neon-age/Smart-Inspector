@@ -1,0 +1,185 @@
+
+
+
+.text {
+    white-space: nowrap;
+}
+.icon {
+    width: 16;
+    height: 16;
+    max-width: 16;
+    max-height: 16;
+    
+    -unity-background-scale-mode: scale-to-fit;
+
+    flex-grow: 1;
+    flex-shrink: 0;
+}
+Content {
+    flex-direction: row;
+    align-self: center;
+    flex-grow: 1;
+    justify-content: center;
+}
+Row {
+    align-items: center;
+}
+.toggle-left .unity-toggle__input {
+    flex-grow: 0;
+    margin-right: 6;
+}
+
+.separator {
+    border-bottom-width: 2;
+    border-bottom-color: rgba(0, 0, 0, 0.25);
+}
+
+/* --- Header --- */
+Header {
+    padding-top: 3;
+    padding-right: 4;
+    padding-bottom: 3;
+}
+Header .container {
+    padding-left: 15;
+}
+Header > .content {
+    padding-left: 6;
+}
+Header > .content > .icon {
+    margin-left: 2;
+    align-self: center;
+}
+Header > .content > .text {
+    padding: 2;
+    padding-left: 4;
+    align-self: stretch;
+    
+    -unity-text-align: middle-left;
+    -unity-font-style: bold;
+}
+Header > .content > .text {
+    flex-grow: 1;
+}
+
+/* --- Tabs Bar --- */
+.tab.unity-toggle {
+    margin-bottom: 1;
+    border-width: 1;
+}
+.tabs-bar {
+    flex-direction: row;
+}
+.tabs-bar {
+    padding: 2;
+}
+.tabs-bar .tab {
+    margin: -1;
+}
+.tabs-bar .tab.unity-button:checked {
+    border-radius: 5;
+    border-width: 1;
+    background-color: rgb(48, 48, 48);
+}
+
+.tabs-bar .tab.unity-button {
+    background-color: rgb(86, 86, 86);
+}
+.tabs-bar .tab.unity-button:hover {
+    background-color: rgb(96, 96, 96);
+}
+.tabs-bar .tab.unity-button:checked {
+    background-color: rgb(48, 48, 48);
+}
+
+/* ---- Tab ---- */
+.tab {
+    align-self: stretch;
+    height: auto;
+}
+.tab .content {
+    justify-content: center;
+}
+
+.tab.blue:checked {
+    color: white;
+    background-color: rgb(63, 108, 170);
+}
+.tab {
+    margin-left: 0;
+    margin-right: 0;
+
+    border-width: 0 1 0 0;
+    background-color: rgba(64, 64, 64, 1);
+}
+.tab:hover {
+    background-color: rgba(76, 76, 76, 1);
+}
+.tab:active {
+    background-color: rgba(86, 86, 86, 1);
+}
+.tab:checked {
+    background-color: rgba(96, 96, 96, 1);
+}
+
+/* --- Button --- */
+.button {
+    align-self: auto;
+}
+.button .icon {
+    align-self: center;
+}
+.button Text {
+    align-self: center;
+    margin-left: 2;
+    margin-right: 2;
+}
+/* ------------ */
+
+
+.help-box {
+    border-radius: 4;
+    border-width: 1;
+    border-color: rgba(0, 0, 0, 0.35);
+    background-color: rgba(125, 125, 125, 0.075);
+    
+    margin: 4;
+    padding: 4;
+    
+    font-size: 11;
+}
+.help-box > .content {
+    justify-content: flex-start;
+}
+.help-box > .content > .icon {
+    align-self: flex-start;
+    margin-right: 2;
+    margin-bottom: -2;
+}
+.help-box > .content > .text {
+    align-self: flex-start;
+    white-space: normal;
+    opacity: 0.9;
+}
+
+.bullet {
+    flex-shrink: 0;
+    font-size: 8;
+}
+.hyperlink {
+    cursor: link;
+    overflow: hidden;
+
+    flex-grow: 0;
+    flex-shrink: 1;
+    align-self: center;
+
+    margin-left: 3;
+    margin-right: 3;
+    padding-right: 0;
+    border-bottom-width: 1;
+
+    color: #7cabf0;
+    border-bottom-color: #7cabf0;
+}
+

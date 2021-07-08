@@ -11,6 +11,23 @@ namespace AV.Inspector
 	{
 		protected static Assembly EditorAssembly { get; } = typeof(Editor).Assembly;
 		
+		static InspectorPrefs prefs = InspectorPrefs.Loaded;
+		
+		string prefKey => GetType().FullName;
+
+		[Serializable]
+		internal struct State
+		{
+			public bool forceSkip;
+		}
+
+		internal State state
+		{
+			get => prefs.patchesTable.Get(prefKey, @default: new State { forceSkip = false });
+			set => prefs.patchesTable.Set(prefKey, value);
+		}
+		
+		
 		public enum Apply
 		{
 			OnLoad,
@@ -41,8 +58,9 @@ namespace AV.Inspector
 				this.apply = apply;
 			}
 		}
-		
-		private List<Patch> patches;
+
+		internal Harmony harmony;
+		readonly List<Patch> patches = new List<Patch>();
 
 		// ReSharper disable once EmptyConstructor
 		// ReSharper disable once PublicConstructorInAbstractClass
@@ -51,10 +69,12 @@ namespace AV.Inspector
 		
 		protected abstract IEnumerable<Patch> GetPatches();
 
-		public void ApplyPatches(Harmony harmony, Apply applyType)
+		public void ApplyPatches(Apply applyType)
 		{
-			if (patches == null)
-				patches = new List<Patch>();
+			if (harmony == null)
+				return;
+			if (state.forceSkip)
+				return;
 			
 			var type = GetType(); 
 			foreach (var patch in GetPatches())
@@ -90,8 +110,10 @@ namespace AV.Inspector
 			}
 		}
 
-		public void UnpatchAll(Harmony harmony)
+		public void UnpatchAll()
 		{
+			if (harmony == null)
+				return;
 			foreach (var patch in patches)
 			{
 				if (!patch.applied)

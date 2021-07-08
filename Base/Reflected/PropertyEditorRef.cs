@@ -33,5 +33,14 @@ namespace AV.Inspector
         {
             return (ActiveEditorTracker)tracker.GetValue(propertyEditor);
         }
+
+        public static void RebuildAllInspectors()
+        {
+            foreach (var window in Resources.FindObjectsOfTypeAll(type))
+            {
+                var tracker = GetTracker(window);
+                tracker.ForceRebuild();
+            }
+        }
     }
 }

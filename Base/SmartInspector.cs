@@ -1,23 +1,25 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using UnityEditor;
-using UnityEditor.UIElements;
 using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.UIElements;
 using AV.Inspector.Runtime;
+using AV.UITK;
 using Object = UnityEngine.Object;
-using Random = UnityEngine.Random;
 using EditorElement = AV.Inspector.Runtime.SmartInspector.EditorElement;
-using Space = AV.Inspector.Runtime.SmartInspector.Space;
+using Space = AV.UITK.FluentUITK.Space;
 
 namespace AV.Inspector
 {
     internal partial class SmartInspector
     {
+        const string UserElementClass = "user-element";
         const int ComponentPaddingBottom = 5;
+        const int SmoothScrollMS = 250;
+        const int SmoothScrollMinMS = 10;
+        const int SmoothScrollMaxMS = 500;
         
         static readonly TypeCache.MethodCollection InitOnInspectorMethods = TypeCache.GetMethodsWithAttribute<InitializeOnInspectorAttribute>();
 
@@ -40,8 +42,9 @@ namespace AV.Inspector
             public SmartInspector smartInspector;
             public EditorElement element;
         }
+        
+        static InspectorPrefs prefs = InspectorPrefs.Loaded;
 
-        internal static SmartInspector LastActive;
         internal static SmartInspector RebuildingInspector;
         internal static Dictionary<EditorWindow, SmartInspector> Injected = new Dictionary<EditorWindow, SmartInspector>();
 
@@ -49,12 +52,16 @@ namespace AV.Inspector
         internal EditorWindow propertyEditor;
         internal ActiveEditorTracker tracker;
         
-        VisualElement root;
-        VisualElement mainContainer;
-        VisualElement contentViewport;
+        FluentElement<VisualElement> root;
+        FluentElement<VisualElement> mainContainer;
+        FluentElement<VisualElement> contentViewport;
+        FluentElement<ScrollView> scrollView;
+        FluentElement<Scroller> scrollbar;
+        
         VisualElement editorsList;
         VisualElement gameObjectEditor;
         
+
         internal InspectorTabsBar toolbar;
         internal TooltipElement tooltip { get; private set; }
 
@@ -73,7 +80,14 @@ namespace AV.Inspector
 
         internal void OnEnable() {}
         internal void OnDisable() {}
-        
+
+        internal static void ForEach(Action<SmartInspector> action)
+        {
+            foreach (var inspector in Injected.Values)
+            {
+                try { action(inspector); } catch(Exception ex) { Debug.LogException(ex); }
+            }
+        }
         
         internal void Inject()
         {
@@ -83,21 +97,22 @@ namespace AV.Inspector
         
         InjectResult TryInject()
         {
-            LastActive = this;
-            
             this.root = propertyEditor.rootVisualElement;
-            this.mainContainer = root.Query(className: "unity-inspector-main-container").First();
-            this.editorsList = root.Query(className: "unity-inspector-editors-list").First();
+            this.mainContainer = root.Get(".unity-inspector-main-container");
+            this.editorsList = root.Get(".unity-inspector-editors-list");
             
             if (editorsList == null)
                 return InjectResult.NoList;
 
-            Init();
-
-            var scrollView = root.Query(className: "unity-inspector-root-scrollview").First();
+            scrollView = root.Get<ScrollView>(".unity-inspector-root-scrollview").First();
+            scrollbar = scrollView.Get<Scroller>(".unity-scroller--vertical");
+            contentViewport = scrollView.Get("#unity-content-viewport");
             
-            contentViewport = scrollView.Query(name: "unity-content-viewport");
-            contentViewport.RegisterCallback<GeometryChangedEvent>(OnContentViewportLayout);
+            root.Register<MouseMoveEvent>(OnRootMouseMove);
+            contentViewport.Register<GeometryChangedEvent>(OnContentViewportLayout);
+            
+            SetupScrollView();
+            Init();
 
             if (gameObjectEditor == null)
                 return InjectResult.NoGameObjectEditor;
@@ -109,37 +124,80 @@ namespace AV.Inspector
             
             // Insert after InspectorElement and before Footer
             gameObjectEditor.Insert(2, toolbar);
-            
-            
+
             return InjectResult.Final;
         }
-        
-        void Init()
+
+        void SetupScrollView()
         {
-            tooltip = root.Query<TooltipElement>(className: "smart-inspector--tooltip");
-            
-            if (tooltip == null)
+            scrollView.AddClass("root-scroll");
+
+            foreach (var evt in FluentUITK.GetCallbacks(scrollView))
             {
-                tooltip = new TooltipElement();
-                tooltip.AddToClassList("smart-inspector--tooltip");
-                root.Add(tooltip);
+                if (evt.Is<WheelEvent>())
+                    evt.Unregister();
+            }
+            scrollView.Register<WheelEvent>(OnScrollWheel);
+        }
+
+        void OnScrollWheel(WheelEvent evt)
+        {
+            var layout = scrollView.x.layout;
+            var content = scrollView.x.contentContainer;
+            var vertical = scrollView.x.verticalScroller;
+
+            if (prefs.useSmoothScrolling)
+            {
+                var delta = evt.delta.y / 20;
+
+                vertical.experimental.animation.Start(0, delta, SmoothScrollMS, (e, value) =>
+                {
+                    Scroll(value);
+                });
+            }
+            else
+            {
+                Scroll(evt.delta.y);
             }
 
-            root.styleSheets.Add(coreStyles);
-            
-            if (!EditorGUIUtility.isProSkin)
-                root.styleSheets.Add(coreStylesLight);
-            
-            root.styleSheets.Add(scrollViewStyles);
-            editorsList.styleSheets.Add(headerStyles);
+            void Scroll(float delta)
+            {
+                if (delta != vertical.value)
+                    evt.StopPropagation();
+                
+                if (content.layout.height - layout.height > 0)
+                {
+                    if (delta < 0)
+                        vertical.ScrollPageUp(Mathf.Abs(delta));
+                    else if (delta > 0)
+                        vertical.ScrollPageDown(Mathf.Abs(delta));
+                }
+            }
         }
 
-        void OnContentViewportLayout(GeometryChangedEvent evt)
+        void Init()
         {
-            // Hides scrollbar indentation
-            contentViewport.style.marginRight = 0;
+            editorsList.styleSheets.Add(headerStyles);
+            
+            tooltip = root.Get<TooltipElement>(".smart-inspector--tooltip");
+            if (tooltip == null)
+            {
+                tooltip = new TooltipElement().Fluent().AddClass("smart-inspector--tooltip");
+                root.Add(tooltip);
+            }
+            
+            ScrollbarRedraw(Vector2.zero);
         }
-
+        
+        void OnUnpatch()
+        {
+            RemoveUserElements();
+        }
+        
+        void OnRootMouseMove(MouseMoveEvent evt)
+        {
+            ScrollbarRedraw(evt.mousePosition);
+        }
         
         void FirstInitOnInspectorIfNeeded()
         {
@@ -163,6 +221,14 @@ namespace AV.Inspector
             RebuildingInspector = this;
             FirstInitOnInspectorIfNeeded();
 
+            if (root == null)
+                return;
+            if (!prefs.enabled)
+                OnUnpatch();
+
+            DisplayOptionalParts();
+            OnContentViewportLayout(null);
+            
             //Debug.Log(stage);
             
             if (stage == RebuildStage.BeforeEditorElements)
@@ -173,6 +239,7 @@ namespace AV.Inspector
             
             if (stage == RebuildStage.BeforeRepaint)
             {
+                RemoveDetachedEditors();
                 RebuildToolbar();
             }
             
@@ -182,6 +249,12 @@ namespace AV.Inspector
             }
         }
 
+        void RemoveDetachedEditors()
+        {
+            var detachedEditors = editors.Where(x => x.Key.parent == null).ToArray();
+            foreach (var detached in detachedEditors)
+                editors.Remove(detached.Key);
+        }
         
         void RebuildToolbar()
         {
@@ -190,11 +263,44 @@ namespace AV.Inspector
 
         void RemoveUserElements()
         {
-            editorsList?.Query(className: Runtime.SmartInspector.UserElementClass).ForEach(x =>
+            editorsList?.Query(className: UserElementClass).ForEach(x => x.RemoveFromHierarchy());
+        }
+        
+        
+        void OnContentViewportLayout(GeometryChangedEvent evt)
+        {
+            if (prefs.useCompactScrollbar)
+                contentViewport?.Margin(right: 0);
+        }
+        
+        void ScrollbarRedraw(Vector2 mousePos)
+        {
+            if (!prefs.useCompactScrollbar)
             {
-                //Debug.Log(x);
-                x.RemoveFromHierarchy();
-            });
+                scrollbar.style.opacity = 1;
+                scrollbar.style.width = 13;
+                return;
+            }
+
+            var layout = root.x.layout;
+            
+            var max = layout.xMax;
+            var min = max - 150;
+
+            var lerp = (mousePos.x - min) / (max - min);
+            
+            scrollbar.style.opacity = Mathf.Lerp(0, 1, lerp);
+            scrollbar.style.width = 5;
+        }
+        
+        void DisplayOptionalParts()
+        {
+            toolbar?.Fluent().Display(prefs.showTabsBar);
+
+            if (prefs.useCompactScrollbar)
+                root.styleSheets.Add(scrollViewStyles);
+            else
+                root.styleSheets.Remove(scrollViewStyles);
         }
 
         
@@ -205,7 +311,9 @@ namespace AV.Inspector
             var header = x.header;
             var inspector = x.inspector;
             var footer = x.footer;
-            var data = x.Get<SubData>();
+            var data = x.Get<SubData>().First();
+
+            var cullingEnabled = prefs.useIMGUICulling;
             
             if (x.isGo)
             {
@@ -218,15 +326,24 @@ namespace AV.Inspector
             inspector.AddClass("inspector");
             footer.AddClass("footer");
 
+            header.onAddChild = e => e.AddToClassList("user-element");
+            inspector.onAddChild = e => e.AddToClassList("user-element");
+
             SetupSubData();
             SetupEditorElement();
             SetupHeader();
             SetupInspectorElement();
             // Footer is manipulated by EditorElementPatch.Init_
-            
-            editors.AddOrAssign(element, x);
-            Runtime.SmartInspector.OnSetupEditorElement?.Invoke(x);
 
+            if (!editors.ContainsKey(element))
+                editors.Add(element, x);
+            
+            try
+            {
+                Runtime.SmartInspector.OnSetupEditorElement?.Invoke(x);
+            }
+            catch (Exception ex) { Debug.LogException(ex); }
+            
 
             void SetupSubData()
             {
@@ -253,32 +370,52 @@ namespace AV.Inspector
             }
             void SetupHeader()
             {
+                #if UNITY_2020_1_OR_NEWER
+                header.x.cullingEnabled = cullingEnabled;
+                #endif
+                
                 if (x.isComponent)
                 {
-                    x.header.SetFlexDirection(FlexDirection.RowReverse);
+                    x.header.Direction(FlexDirection.RowReverse);
                     
-                    // Temp solution for component header buttons padding
-                    if (!x.header.Has<Space>("#rightSpace"))
+                    var width = 64;
+                    if (!prefs.showHelp)
+                        width -= 20;
+                    if (!prefs.showPreset)
+                        width -= 20;
+                    
+                    // Temp solution for component header buttons spacing
+                    if (!x.header.Has("#rightSpace", out Space space))
                     {
-                        x.header.x.Add(new Space(64) { name = "rightSpace" });
+                        space = new Space { name = "rightSpace" };
+                        x.header.x.Add(space);
                     }
+
+                    space.style.width = width;
                 }
             }
             void SetupInspectorElement()
             {
-                if (x.isComponent) 
-                    SetupComponentInspector();
+                var container = inspector.Get<IMGUIContainer>().First() ?? 
+                                inspector.Get(".unity-inspector-element__custom-inspector-container").First();
+                
+                if (container != null)
+                    SetupInspectorContainer(container);
             }
 
-            void SetupComponentInspector()
+            void SetupInspectorContainer(VisualElement container)
             {
-                var inspectorContainer = inspector.Get<IMGUIContainer>() ?? 
-                                         inspector.Get(".unity-inspector-element__custom-inspector-container");
+                if (container is IMGUIContainer imgui)
+                {
+                    #if UNITY_2020_1_OR_NEWER
+                    imgui.cullingEnabled = cullingEnabled;
+                    #endif
+                }
 
-                if (inspectorContainer != null)
+                if (x.isComponent)
                 {
                     // Dragging is calculated based on container layout (it ignores InspectorElement padding)
-                    inspectorContainer.style.paddingBottom = ComponentPaddingBottom;
+                    container.style.paddingBottom = ComponentPaddingBottom;
                     inspector.style.paddingBottom = 0;
                 }
             }

@@ -47,6 +47,8 @@ namespace AV.Inspector
         static void Init_(VisualElement __instance, IMGUIContainer ___m_Header, IMGUIContainer ___m_Footer, EditorWindow ___inspectorWindow)
         {
             var smartInspector = SmartInspector.RebuildingInspector;
+            if (smartInspector == null)
+                return;
             
             var data = CreateEditorElement(__instance, ___m_Header, ___m_Footer, smartInspector);
             smartInspector.SetupEditorElement(data);
@@ -59,7 +61,7 @@ namespace AV.Inspector
         }
         
         
-        static EditorElement CreateEditorElement(VisualElement element, VisualElement header, VisualElement footer, SmartInspector smartInspector)
+        internal static EditorElement CreateEditorElement(VisualElement element, IMGUIContainer header, IMGUIContainer footer, SmartInspector smartInspector)
         {
             var editor = EditorElementRef.GetEditor(element);
             var editorIndex = EditorElementRef.GetEditorIndex(element);
@@ -67,7 +69,7 @@ namespace AV.Inspector
             
             var window = smartInspector.propertyEditor;
             var tracker = smartInspector.tracker;
-            
+
             
             var data = new EditorElement(element)
             {
@@ -82,7 +84,7 @@ namespace AV.Inspector
                 window = window,
                 tracker = tracker,
                 
-                smartInspector = SmartInspector.RebuildingInspector,
+                smartInspector = smartInspector,
             };
 
             return data;

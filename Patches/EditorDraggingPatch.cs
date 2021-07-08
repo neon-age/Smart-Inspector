@@ -14,11 +14,14 @@ namespace AV.Inspector
 {
     internal class EditorDraggingPatch : PatchBase
     {
+        static InspectorPrefs prefs => InspectorPrefs.Loaded;
+        
         const int LongHoldMS = 600;
         const int SlowMouseMoveDelayMS = 400;
         const float SlowMouseDeltaThreshold = 40;
         
         const float DragAreaHeight = 22;
+        const float DefaultDragAreaHeight = 5;
         const float DragMarkerHeight = 4;
         const float DragMarkerY = 2;
         
@@ -48,7 +51,7 @@ namespace AV.Inspector
         static void OnSetupEditorElement(Runtime.SmartInspector.EditorElement x)
         {
             var element = x.element.x;
-            var footer = x.footer.x as IMGUIContainer;
+            var footer = x.footer.x;
             var window = x.window;
             
             var dragging = false;
@@ -60,7 +63,8 @@ namespace AV.Inspector
             footer.style.left = 0;
             footer.style.right = 0;
             footer.style.bottom = 0;
-            footer.style.height = DragAreaHeight;
+            footer.style.height = prefs.useSmartDrag ? DragAreaHeight : DefaultDragAreaHeight;
+            
             footer.onGUIHandler += () =>
             {
                 if (!isAnyDragging)
@@ -79,6 +83,8 @@ namespace AV.Inspector
             // Hides drag area when user is holding mouse still to drag into object field or expand header.
             async void LeaveOnLongHold()
             {
+                if (!prefs.useSmartDrag)
+                    return;
                 // Don't leave until mouse is at rest! Ignore small delta
                 while ((holdMousePos - mousePos).magnitude > SlowMouseDeltaThreshold)
                 {
@@ -164,6 +170,8 @@ namespace AV.Inspector
         
         static void GetTargetRect_(ref Rect __result)
         {
+            if (!prefs.useSmartDrag)
+                return;
             __result.height = DragAreaHeight;
         }
 
@@ -173,6 +181,8 @@ namespace AV.Inspector
 #endif
         )
         {
+            if (!prefs.useSmartDrag)
+                return;
             __result.y = __result.yMax - DragMarkerHeight;
             __result.height = DragMarkerHeight;
             

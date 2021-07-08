@@ -1,0 +1,46 @@
+
+
+.top-bar {
+    align-items: center;
+    padding-left: 6;
+    padding-right: 3;
+    padding-bottom: 3;
+}
+.top-group {
+    margin-top: 3;
+}
+
+
+Toggle {
+    margin-bottom: 0;
+    height: 20;
+}
+Toggle Label {
+    -unity-text-align: middle-left;
+}
+Toggle:hover #unity-checkmark  {
+    border-width: 1;
+    border-radius: 2;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+Toggle:hover:focus #unity-checkmark  {
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+
+Foldout {
+    padding-top: 3;
+    padding-bottom: 3;
+}
+Foldout #unity-content {
+    margin-left: 15;
+}
+Foldout > Toggle Label {
+    -unity-font-style: bold;
+    
+    left: 9;
+    margin-bottom: 1;
+}
+Foldout > Toggle #unity-checkmark {
+    display: none;
+}

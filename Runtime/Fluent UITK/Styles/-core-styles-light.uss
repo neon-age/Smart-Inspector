@@ -1,0 +1,28 @@
+
+.hyperlink {
+    color: #3a72b0;
+    border-color: #3a72b0;
+}
+
+.tabs-bar .tab.unity-button {
+    background-color: rgb(216, 216, 216);
+}
+.tabs-bar .tab.unity-button:hover {
+    background-color: rgb(226, 226, 226);
+}
+.tabs-bar .tab.unity-button:checked {
+    background-color: rgb(156, 156, 156);
+}
+
+.tab {
+    background-color: rgba(200, 200, 200, 1);
+}
+.tab:hover {
+    background-color: rgba(220, 220, 220, 1);
+}
+.tab:active {
+    background-color: rgba(185, 185, 185, 1);
+}
+.tab.blue:checked {
+    background-color: rgb(69, 122, 194);
+}
