@@ -1,6 +1,6 @@
 {
   "name": "com.av.smart-inspector",
-  "version": "0.8.0",
+  "version": "0.8.0-pre.1",
   "displayName": "Smart Inspector",
   "description": "Fluent re-take on Unity Inspector UX. \nPacked with QoL improvements - fully customizable.",
   "keywords": [
