@@ -30,13 +30,6 @@ namespace AV.UITK
     
     public static partial class FluentUITK
     {
-        static MethodInfo setToolbarStyleSheet = 
-            #if UNITY_EDITOR
-            typeof(Toolbar).GetMethod("SetToolbarStyleSheet", BindingFlags.NonPublic | BindingFlags.Static);
-            #else
-            null;
-            #endif
-
         /// <summary> Setup pre-defined styles to VisualElement. </summary>
         public static void DefineStyle(VisualElement x, Styles styles)
         {

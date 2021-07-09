@@ -37,48 +37,41 @@ namespace AV.UITK
         {
             Bind(property.propertyPath); return x;
         }
-        #else
-        public FluentElement<T> Bind(object property) => x;
-        #endif
-        
-        #if UNITY_EDITOR
         public FluentElement<T> Bind(SerializedObject serializedObject) { x.Bind(serializedObject); return x; }
         #else
-        public FluentElement<T> Bind(object serializedObject) => x;
+        public FluentElement<T> Bind(object nothing) => x;
         #endif
         
         #if UNITY_EDITOR
         public void Unbind() => x.Unbind();
         #endif
         
-        
+        #if UNITY_EDITOR
         public FluentElement<PropertyField> NewField(SerializedProperty property, string label = null)
         {
-            #if UNITY_EDITOR
             return new PropertyField(property) { label = label };
-            #else
-            return null;
-            #endif
         }
+        #else
+        public FluentElement<T> NewField(object property, string label = null) => x;
+        #endif
 
+        #if UNITY_EDITOR
         public FluentElement<PropertyField> NewField(string bindingPath, string label = null)
         {
-            #if UNITY_EDITOR
             return new PropertyField { bindingPath = bindingPath, label = label };
-            #else
-            return null;
-            #endif
         }
+        #else
+        public FluentElement<T> NewField(string bindingPath, string label = null) => x;
+        #endif
         
+        #if UNITY_EDITOR
         public FluentElement<PropertyField> NewField<TSource>(Expression<Func<TSource, object>> member, string label = null)
         {
-            #if UNITY_EDITOR
             var bindingPath = FluentUITK.GetMemberPath(member);
-            
             return new PropertyField { bindingPath = bindingPath, label = label };
-            #else
-            return null;
-            #endif
         }
+        #else
+        public FluentElement<T> NewField<TSource>(Expression<Func<TSource, object>> member, string label = null) => x;
+        #endif
     }
 }
