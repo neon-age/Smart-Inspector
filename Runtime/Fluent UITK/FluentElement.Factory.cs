@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using Space = AV.UITK.FluentUITK.Space;
 using Button = AV.UITK.FluentUITK.Button;
+using Column = AV.UITK.FluentUITK.Column;
 
 using UIE = UnityEngine.UIElements;
 using static AV.UITK.FluentUITK;
