@@ -3,7 +3,8 @@
 ## ! ***This package would be soon rewritten to remove Harmony dependency, with introduction of Open Labs Core package*** !
 
 [![twitter](https://img.shields.io/twitter/follow/_neonage?style=social)](https://twitter.com/_neonage)\
-[![discord online](https://img.shields.io/discord/830405926078644254?label=Open%20Labs&logo=discord&style=social)](https://discord.gg/wWpqvwuf8J)
+[![discord online](https://img.shields.io/discord/830405926078644254?label=Open%20Labs&logo=discord&style=social)](https://discord.gg/wWpqvwuf8J)\
+[![my music](https://img.shields.io/badge/SoundCloud-FF3300?style=for-the-badge&logo=soundcloud&logoColor=white)](https://soundcloud.com/neonaje) 🎶
 
 👇 Cool work-in-progress stuff is shared on our channel!
 
