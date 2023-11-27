@@ -3,8 +3,6 @@
 [![twitter](https://img.shields.io/twitter/follow/_neonage?style=social)](https://twitter.com/_neonage)\
 [![discord online](https://img.shields.io/discord/830405926078644254?label=Open%20Labs&logo=discord&style=social)](https://discord.gg/wWpqvwuf8J)
 
-👇 Cool work-in-progress stuff is shared on our channel!
-
 [![join discord](https://user-images.githubusercontent.com/29812914/121816656-0cb93080-cca7-11eb-954a-344cfd31f530.png)](https://discord.gg/wWpqvwuf8J)
  
 ### **Tabbed Inspector** 
